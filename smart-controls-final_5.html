@@ -1221,31 +1221,6 @@ footer{
   font-size: 0.95rem;
 }
 
-.hmi-strip{
-  display:flex;
-  gap: 34px;
-  overflow: hidden;
-  white-space: nowrap;
-  padding: 7px 6vw;
-  background: #eceef0;
-  border-bottom: 1px solid var(--panel-line);
-  font-family:'IBM Plex Mono', monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  color: var(--steel);
-  text-transform: uppercase;
-}
-.hmi-item{ display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
-.hmi-dot{
-  width:6px; height:6px; border-radius:50%;
-  background: var(--steel);
-  display:inline-block;
-}
-.hmi-dot.ok{ background: var(--signal-green); box-shadow: 0 0 5px rgba(82,183,136,0.6); }
-@media (max-width: 880px){
-  .hmi-strip{ gap: 24px; padding: 6px 5vw; }
-}
-
 @media (max-width: 880px){
   .hero-grid, .why-wrap, .contact-wrap{ grid-template-columns: 1fr; }
   .services-grid, .reviews-grid{ grid-template-columns: 1fr; }
@@ -1315,17 +1290,6 @@ footer{
     <span></span><span></span><span></span>
   </button>
 </header>
-
-<div class="hmi-strip" aria-hidden="true">
-  <span class="hmi-item"><span class="hmi-dot ok"></span>SYSTEM: ONLINE</span>
-  <span class="hmi-item">NAWIEW: 21.4°C</span>
-  <span class="hmi-item">WYWIEW: 23.1°C</span>
-  <span class="hmi-item">CO₂: 612 ppm</span>
-  <span class="hmi-item"><span class="hmi-dot ok"></span>FILTR: OK</span>
-  <span class="hmi-item">PRZEPUSTNICA: 78%</span>
-  <span class="hmi-item"><span class="hmi-dot ok"></span>MODBUS RTU: POŁĄCZONO</span>
-  <span class="hmi-item">ODZYSK CIEPŁA: 84%</span>
-</div>
 
 <div class="mobile-nav-overlay" id="mobileNavOverlay">
   <nav class="mobile-nav">
