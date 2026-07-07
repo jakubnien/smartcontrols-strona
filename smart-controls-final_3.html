@@ -8,15 +8,15 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Poppins:wght@600;700&display=swap');
 
 :root{
-  --graphite: #14181d;
-  --panel: #1d242b;
-  --panel-line: #2c363e;
-  --steel: #7d8b96;
-  --off-white: #e9ecee;
+  --graphite: #f4f5f6;
+  --panel: #ffffff;
+  --panel-line: #dde1e4;
+  --steel: #6b7580;
+  --off-white: #1a1f24;
   --amber: #f47c20;
-  --amber-dim: #96521b;
-  --signal-green: #52b788;
-  --wire-blue: #5b8dbc;
+  --amber-dim: #f9c398;
+  --signal-green: #2f9e6b;
+  --wire-blue: #3f6f96;
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
@@ -48,7 +48,7 @@ header{
   align-items:center;
   justify-content:space-between;
   padding: 18px 6vw;
-  background: rgba(23,27,31,0.92);
+  background: rgba(244,245,246,0.92);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--panel-line);
 }
@@ -109,7 +109,7 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
   transition: all .15s;
 }
 .cennik-filter-btn:hover{ border-color: var(--steel); color: var(--off-white); }
-.cennik-filter-btn.active{ background: var(--amber); border-color: var(--amber); color: var(--graphite); font-weight:600; }
+.cennik-filter-btn.active{ background: var(--amber); border-color: var(--amber); color: #1a1200; font-weight:600; }
 .cennik-table-wrap{
   border:1px solid var(--panel-line);
   border-radius:8px;
@@ -272,7 +272,7 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
   cursor:pointer;
   transition: background .15s;
 }
-.news-item-head:hover{ background:#242c33; }
+.news-item-head:hover{ background:#eceef0; }
 .news-item h3{ font-family:'Space Grotesk', sans-serif; font-size:1rem; font-weight:600; flex:1; }
 .news-item .news-date{ font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color: var(--steel); white-space:nowrap; flex-shrink:0; }
 .news-item .news-arrow{ color: var(--steel); flex-shrink:0; transition: transform .2s; }
@@ -325,6 +325,8 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
 }
 .realizacja-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition: transform .3s; }
 .realizacja-card:hover .realizacja-photo img{ transform: scale(1.04); }
+.realizacja-photo.no-photo{ display:flex; align-items:center; justify-content:center; gap:8px; }
+.realizacja-photo.no-photo::after{ content:'Brak zdjęcia'; font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color: var(--steel); }
 .realizacja-body{ padding: 20px 22px 24px; flex:1; }
 .realizacja-card h3{ font-family:'Space Grotesk', sans-serif; font-size:1.0rem; font-weight:600; margin-bottom:12px; line-height:1.3;}
 .realizacja-meta{ display:flex; flex-direction:column; gap:6px; }
@@ -358,7 +360,7 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
   transition: background .15s;
   font-size:0.9rem;
 }
-.download-item:hover{ background:#242c33; }
+.download-item:hover{ background:#eceef0; }
 .download-item .dl-icon{
   font-family:'IBM Plex Mono', monospace;
   color: var(--amber);
@@ -409,13 +411,13 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
 .cert-tab-btn.active{
   background: var(--amber);
   border-color: var(--amber);
-  color: var(--graphite);
+  color: #1a1200;
   font-weight:600;
 }
 .cert-tab-btn.active .cert-count{
   background: rgba(0,0,0,0.15);
   border-color: transparent;
-  color: var(--graphite);
+  color: #1a1200;
 }
 .cert-panel{ display:none; }
 .cert-panel.active{ display:block; padding-top: 16px; }
@@ -444,7 +446,7 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
   white-space:nowrap;
   transition: background .2s, color .2s;
 }
-.call-btn:hover{ background: var(--amber); color: var(--graphite); }
+.call-btn:hover{ background: var(--amber); color: #1a1200; }
 
 /* ---------- hero ---------- */
 .hero{
@@ -496,7 +498,7 @@ h1 span{ color: var(--amber); }
 .hero-ctas{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom: 40px;}
 .btn-primary{
   background: var(--amber);
-  color: var(--graphite);
+  color: #1a1200;
   font-weight:600;
   padding: 13px 26px;
   border-radius: 3px;
@@ -622,7 +624,7 @@ section{ padding: 90px 6vw; }
 .service-card::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
 .service-card::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
 .service-card:hover::before, .service-card:hover::after{ opacity: 1; }
-.service-card:hover, .service-card:focus-visible{ background:#242c33; }
+.service-card:hover, .service-card:focus-visible{ background:#eceef0; }
 .service-card:focus-visible{ box-shadow: inset 0 0 0 1px var(--amber); }
 .service-num{
   font-family:'IBM Plex Mono', monospace;
@@ -734,7 +736,7 @@ section{ padding: 90px 6vw; }
   font-family:'IBM Plex Sans', sans-serif;
   color: var(--off-white);
 }
-.product-item:hover, .product-item:focus-visible{ background:#242c33; outline:none; }
+.product-item:hover, .product-item:focus-visible{ background:#eceef0; outline:none; }
 .product-thumb{
   flex-shrink:0;
   width: 88px; height:88px;
@@ -1126,7 +1128,7 @@ footer{
   overflow: hidden;
   white-space: nowrap;
   padding: 7px 6vw;
-  background: #10141a;
+  background: #eceef0;
   border-bottom: 1px solid var(--panel-line);
   font-family:'IBM Plex Mono', monospace;
   font-size: 0.68rem;
@@ -1200,7 +1202,7 @@ footer{
 
 <header>
   <div class="logo on-start" data-page="start" role="button" tabindex="0" style="cursor:pointer;" aria-label="Smart Controls — strona główna">
-    <img class="logo-img" src="assets/logo-dark-theme.png" alt="Smart Controls">
+    <img class="logo-img" src="assets/logo.png" alt="Smart Controls">
   </div>
   <nav>
     <a href="#" data-page="oferta" class="nav-link">Oferta</a>
@@ -2485,7 +2487,7 @@ const realizacjeGrid = document.getElementById('realizacjeGrid');
 if(realizacjeGrid){
   realizacjeGrid.innerHTML = realizacjeData.map(r => `
     <div class="realizacja-card">
-      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"></div>
+      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.classList.add('no-photo'); this.remove();"></div>
       <div class="realizacja-body">
         <h3>${r.name}</h3>
         <div class="realizacja-meta">
