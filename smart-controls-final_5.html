@@ -325,8 +325,6 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
 }
 .realizacja-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition: transform .3s; }
 .realizacja-card:hover .realizacja-photo img{ transform: scale(1.04); }
-.realizacja-photo.no-photo{ display:flex; align-items:center; justify-content:center; gap:8px; }
-.realizacja-photo.no-photo::after{ content:'Brak zdjęcia'; font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color: var(--steel); }
 .realizacja-body{ padding: 20px 22px 24px; flex:1; }
 .realizacja-card h3{ font-family:'Space Grotesk', sans-serif; font-size:1.0rem; font-weight:600; margin-bottom:12px; line-height:1.3;}
 .realizacja-meta{ display:flex; flex-direction:column; gap:6px; }
@@ -604,7 +602,6 @@ svg#duct-diagram{ width:100%; height:auto; display:block; }
   max-height:100%;
   object-fit:contain;
 }
-.pres-photo.no-photo::after{ content:'Brak zdjęcia'; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--steel); }
 .pres-text{ flex:1; min-width:0; }
 .pres-eyebrow{
   font-family:'IBM Plex Mono', monospace;
@@ -2401,7 +2398,7 @@ if(ioTableBodyEl){
 const presSlides = [
   {
     eyebrow: "Oprogramowanie",
-    img: "assets/pdf-slides/oprogramowanie.png",
+    img: "assets/pdf-slides-v2/oprogramowanie.png",
     title: "Aplikacje sterujące centralami HVAC",
     subtitle: "Oprogramowanie uniwersalne i dedykowane",
     bullets: [
@@ -2414,7 +2411,7 @@ const presSlides = [
   },
   {
     eyebrow: "Webserver",
-    img: "assets/pdf-slides/webserver.png",
+    img: "assets/pdf-slides-v2/webserver.png",
     title: "Standard w sterownicach PremiumBOX+",
     subtitle: "Zdalny dostęp bez dodatkowego panelu",
     bullets: [
@@ -2427,7 +2424,7 @@ const presSlides = [
   },
   {
     eyebrow: "Panel dotykowy",
-    img: "assets/pdf-slides/sc4-hmi-touch.png",
+    img: "assets/pdf-slides-v2/sc4-hmi-touch.png",
     title: "SC4 HMI TOUCH",
     subtitle: "Panel dotykowy do central AHU · przekątna 4″",
     bullets: [
@@ -2440,7 +2437,7 @@ const presSlides = [
   },
   {
     eyebrow: "Panel dotykowy",
-    img: "assets/pdf-slides/sc7-hmi-touch.png",
+    img: "assets/pdf-slides-v2/sc7-hmi-touch.png",
     title: "SC7 HMI TOUCH",
     subtitle: "Panel dotykowy do central AHU · przekątna 7″",
     bullets: [
@@ -2453,7 +2450,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownik",
-    img: "assets/pdf-slides/sc-ctrl-r.png",
+    img: "assets/pdf-slides-v2/sc-ctrl-r.png",
     title: "SC-CTRL-R",
     subtitle: "Sterownik rekuperatorów i małych central wentylacyjnych",
     bullets: [
@@ -2466,7 +2463,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownik",
-    img: "assets/pdf-slides/sc-ctrl-g.png",
+    img: "assets/pdf-slides-v2/sc-ctrl-g.png",
     title: "SC-CTRL-G",
     subtitle: "Sterownik wentylacji garaży podziemnych",
     bullets: [
@@ -2479,7 +2476,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownik",
-    img: "assets/pdf-slides/sc-ctrl-z.png",
+    img: "assets/pdf-slides-v2/sc-ctrl-z.png",
     title: "SC-CTRL-Z",
     subtitle: "Sterownik układów strefowych",
     bullets: [
@@ -2492,7 +2489,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownik",
-    img: "assets/pdf-slides/compact-m.png",
+    img: "assets/pdf-slides-v2/compact-m.png",
     title: "COMPACT-M",
     subtitle: "Sterownik rekuperatorów i małych central wentylacyjnych",
     bullets: [
@@ -2505,7 +2502,7 @@ const presSlides = [
   },
   {
     eyebrow: "Siłownik VAV",
-    img: "assets/pdf-slides/nsva-mod.png",
+    img: "assets/pdf-slides-v2/nsva-mod.png",
     title: "NSVA-MOD",
     subtitle: "Siłownik do przepustnic VAV z regulatorem przepływu",
     bullets: [
@@ -2518,7 +2515,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownice HVAC",
-    img: "assets/pdf-slides/sterownice-hvac.png",
+    img: "assets/pdf-slides-v2/sterownice-hvac.png",
     title: "Sterownice do systemów wentylacji",
     subtitle: "Wykonanie z tworzywa lub obudowy metalowej",
     bullets: [
@@ -2530,24 +2527,25 @@ const presSlides = [
     ]
   },
   {
-    eyebrow: "Prefabrykacja",
-    img: "assets/pdf-slides/prefabrykacja.png",
-    title: "Prefabrykacja rozdzielnic",
-    subtitle: "Rozdzielnice niskiego i średniego napięcia",
+    eyebrow: "Termostat",
+    img: "assets/pdf-slides-v2/sc607ec-wifi.png",
+    title: "SC607EC Wi-Fi",
+    subtitle: "Termostat do obsługi klimakonwektorów i fancoili",
     bullets: [
-      "Panele sterownicze oraz systemy automatyki",
-      "Wysokiej jakości komponenty od renomowanych dostawców",
-      "Zgodność z normami PN-EN",
-      "Szybka realizacja, konkurencyjne ceny"
+      "Sterowanie wentylatorami EC",
+      "Zasilanie: 90 ~ 230 V AC, montaż podtynkowy",
+      "Wbudowany czujnik temperatury NTC 10k",
+      "Zakres regulacji 5°C ~ 35°C",
+      "RS485 Modbus RTU oraz Wi-Fi"
     ]
   },
   {
     eyebrow: "Termostat",
-    img: "assets/pdf-slides/sc607-wifi.png",
-    title: "SC607EC / SC607AC Wi-Fi",
+    img: "assets/pdf-slides-v2/sc607ac-wifi.png",
+    title: "SC607AC Wi-Fi",
     subtitle: "Termostat do obsługi klimakonwektorów i fancoili",
     bullets: [
-      "Sterowanie wentylatorami EC / AC",
+      "Sterowanie wentylatorami AC",
       "Zasilanie: 90 ~ 230 V AC, montaż podtynkowy",
       "Wbudowany czujnik temperatury NTC 10k",
       "Zakres regulacji 5°C ~ 35°C",
@@ -2556,7 +2554,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownik",
-    img: "assets/pdf-slides/sc-fcv5.png",
+    img: "assets/pdf-slides-v2/sc-fcv5.png",
     title: "SC-FCV5",
     subtitle: "Sterownik zaworu z regulatorem temperatury",
     bullets: [
@@ -2569,7 +2567,7 @@ const presSlides = [
   },
   {
     eyebrow: "Regulator",
-    img: "assets/pdf-slides/sc-asc.png",
+    img: "assets/pdf-slides-v2/sc-asc.png",
     title: "SC-ASC",
     subtitle: "Zadajnik / regulator 0–10 VDC",
     bullets: [
@@ -2582,7 +2580,7 @@ const presSlides = [
   },
   {
     eyebrow: "Sterownik",
-    img: "assets/pdf-slides/sc-he.png",
+    img: "assets/pdf-slides-v2/sc-he.png",
     title: "SC-HE",
     subtitle: "Sterownik nagrzewnicy elektrycznej",
     bullets: [
@@ -2595,7 +2593,7 @@ const presSlides = [
   },
   {
     eyebrow: "Regulator",
-    img: "assets/pdf-slides/sc-fpr.png",
+    img: "assets/pdf-slides-v2/sc-fpr.png",
     title: "SC-FPR",
     subtitle: "Regulator ciśnienia",
     bullets: [
@@ -2608,7 +2606,7 @@ const presSlides = [
   },
   {
     eyebrow: "Moduł I/O",
-    img: "assets/pdf-slides/sc-ui8ao4do4.png",
+    img: "assets/pdf-slides-v2/sc-ui8ao4do4.png",
     title: "SC-UI8AO4DO4",
     subtitle: "Moduł wejść/wyjść",
     bullets: [
@@ -2621,7 +2619,7 @@ const presSlides = [
   },
   {
     eyebrow: "Moduł I/O",
-    img: "assets/pdf-slides/sc-m-ui8ao4do6.png",
+    img: "assets/pdf-slides-v2/sc-m-ui8ao4do6-oem-n.png",
     title: "SC-M-UI8AO4DO6-OEM-N",
     subtitle: "Moduł wejść/wyjść",
     bullets: [
@@ -2634,7 +2632,7 @@ const presSlides = [
   },
   {
     eyebrow: "Czujnik",
-    img: "assets/pdf-slides/sc-dhts.png",
+    img: "assets/pdf-slides-v2/sc-dhts.png",
     title: "SC-DHTS",
     subtitle: "Kanałowy przetwornik wilgotności i temperatury",
     bullets: [
@@ -2647,7 +2645,7 @@ const presSlides = [
   },
   {
     eyebrow: "Czujnik",
-    img: "assets/pdf-slides/ntc10k.png",
+    img: "assets/pdf-slides-v2/ntc10k.png",
     title: "Czujniki temperatury NTC10k",
     subtitle: "Wersja kanałowa, pomieszczeniowa, zewnętrzna",
     bullets: [
@@ -2660,7 +2658,7 @@ const presSlides = [
   },
   {
     eyebrow: "Czujnik",
-    img: "assets/pdf-slides/pt1000.png",
+    img: "assets/pdf-slides-v2/pt1000.png",
     title: "Czujniki temperatury Pt1000",
     subtitle: "Wersja kanałowa, pomieszczeniowa, zewnętrzna",
     bullets: [
@@ -2669,32 +2667,6 @@ const presSlides = [
       "Stała czasowa: 6 s max",
       "Zakres pomiarowy: -20°C ÷ 120°C",
       "Zakres temperatury pracy: -25°C ÷ 70°C"
-    ]
-  },
-  {
-    eyebrow: "Siłownik",
-    img: "assets/pdf-slides/ncca-nccm.png",
-    title: "NCCA / NCCM",
-    subtitle: "Ultrapłaski siłownik przepustnicy",
-    bullets: [
-      "Moment obrotowy 2 Nm, przepustnica do 0,4 m²",
-      "Wymiary trzpienia Ø 6...13 mm / 12 mm",
-      "Zasilanie 24 VAC/DC ± 10%, 50…60 Hz",
-      "Sygnał sterujący 0(2)…10 VDC (NCCM)",
-      "Dostępny również w wersji ON/OFF (NCCA)"
-    ]
-  },
-  {
-    eyebrow: "Panele OEM",
-    img: "assets/pdf-slides/panele.png",
-    title: "Panele do dowolnego zastosowania / OEM",
-    subtitle: "Panele dotykowe 4″ lub 7″ w wersji OEM",
-    bullets: [
-      "Rozdzielczość 4″: 480×480 px, 7″: 1024×600 px",
-      "Wbudowane głośniki stereo, zegar czasu rzeczywistego",
-      "Wbudowany czujnik temperatury i wilgotności",
-      "Napięcie zasilania: 12 V ~ 24 V DC",
-      "2 × RS485 Modbus RTU"
     ]
   }
 ];
@@ -2708,7 +2680,7 @@ if(presStage && presDotsEl){
   presStage.innerHTML = presSlides.map((s, i) => `
     <div class="pres-slide${i===0?' active':''}" data-idx="${i}">
       <div class="pres-photo">
-        <img src="${s.img}" alt="${s.title}" loading="lazy" onerror="this.parentElement.classList.add('no-photo'); this.remove();">
+        <img src="${s.img}" alt="${s.title}" loading="lazy">
       </div>
       <div class="pres-text">
         <div class="pres-eyebrow">${s.eyebrow}</div>
@@ -2894,7 +2866,7 @@ const realizacjeGrid = document.getElementById('realizacjeGrid');
 if(realizacjeGrid){
   realizacjeGrid.innerHTML = realizacjeData.map(r => `
     <div class="realizacja-card">
-      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.classList.add('no-photo'); this.remove();"></div>
+      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"></div>
       <div class="realizacja-body">
         <h3>${r.name}</h3>
         <div class="realizacja-meta">
