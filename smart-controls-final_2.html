@@ -1,0 +1,3090 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Controls S.C. — Automatyka wentylacji i klimatyzacji</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Poppins:wght@600;700&display=swap');
+
+:root{
+  --graphite: #14181d;
+  --panel: #1d242b;
+  --panel-line: #2c363e;
+  --steel: #7d8b96;
+  --off-white: #e9ecee;
+  --amber: #f47c20;
+  --amber-dim: #96521b;
+  --signal-green: #52b788;
+  --wire-blue: #5b8dbc;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+
+body{
+  background: var(--graphite);
+  color: var(--off-white);
+  font-family: 'IBM Plex Sans', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a{color:inherit;}
+
+.blueprint-bg{
+  background-image:
+    linear-gradient(var(--panel-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--panel-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-position: -1px -1px;
+}
+
+/* ---------- header ---------- */
+header{
+  position: sticky;
+  top:0;
+  z-index: 50;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 18px 6vw;
+  background: rgba(23,27,31,0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--panel-line);
+}
+.logo{
+  display:flex;
+  align-items:center;
+  padding: 10px 0;
+  transition: opacity .15s;
+  outline: none;
+}
+.logo:hover{ opacity:0.92; }
+.logo:focus-visible{ outline: 2px solid var(--amber); outline-offset: 4px; border-radius: 4px; }
+.logo.on-start .logo-img{ filter: drop-shadow(0 0 6px rgba(244,124,32,0.45)); }
+.logo-img{ height: 30px; width: auto; display:block; }
+@keyframes blink{
+  0%,100%{opacity:1;}
+  50%{opacity:0.35;}
+}
+nav{display:flex; gap: 32px; font-size:0.92rem; color: var(--steel);}
+nav a{text-decoration:none; transition:color .2s; cursor:pointer;}
+nav a:hover{color: var(--amber);}
+nav a.active{ color: var(--off-white); }
+nav a.active::after{ content:""; display:block; height:2px; background:var(--amber); margin-top:4px; }
+
+.page{ display:none; }
+.page.active{ display:block; animation: fadein .25s ease; }
+@keyframes fadein{ from{ opacity:0; transform: translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+
+/* realizacje */
+.cennik-section{
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid var(--panel-line);
+}
+.cennik-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:20px;
+  margin-bottom: 22px;
+}
+.cennik-filters{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom: 20px;
+}
+.cennik-filter-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--steel);
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor:pointer;
+  transition: all .15s;
+}
+.cennik-filter-btn:hover{ border-color: var(--steel); color: var(--off-white); }
+.cennik-filter-btn.active{ background: var(--amber); border-color: var(--amber); color: var(--graphite); font-weight:600; }
+.cennik-table-wrap{
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.cennik-table-head{
+  display:grid; grid-template-columns: 1fr 1.4fr 1fr 1.5fr 0.9fr;
+  gap:12px;
+  background: var(--panel);
+  padding: 12px 18px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--steel);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+}
+.cennik-row{
+  display:grid; grid-template-columns: 1fr 1.4fr 1fr 1.5fr 0.9fr;
+  gap:12px;
+  padding: 12px 18px;
+  background: var(--graphite);
+  border-top: 1px solid var(--panel-line);
+  font-size: 0.86rem;
+  align-items:center;
+}
+.cennik-row .c-cat{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--signal-green); }
+.cennik-row .c-product{ color: var(--wire-blue); font-size:0.78rem; }
+.cennik-row .c-model{ color: var(--off-white); font-weight:500; }
+.cennik-row .c-spec{ color: var(--steel); font-size:0.8rem; }
+.cennik-row .c-price{ color: var(--amber); font-family:'IBM Plex Mono', monospace; font-size:0.85rem; text-align:right; white-space:nowrap; }
+.io-section{
+  margin-bottom: 32px;
+  padding: 18px 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+}
+.io-table-wrap{
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.io-table-head{
+  display:grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr 0.9fr;
+  gap:12px;
+  background: var(--graphite);
+  padding: 10px 16px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--steel);
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+}
+.io-row{
+  display:grid; grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr 0.9fr;
+  gap:12px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--panel-line);
+  font-size: 0.82rem;
+  align-items:center;
+}
+.io-row .io-model{ color: var(--off-white); font-weight:500; font-family:'IBM Plex Mono', monospace; font-size:0.78rem; }
+.io-row .io-val{ color: var(--steel); font-size:0.8rem; }
+.io-row .io-val.io-none{ color: var(--panel-line); }
+.io-row .io-price{ color: var(--amber); font-family:'IBM Plex Mono', monospace; font-size:0.82rem; text-align:right; }
+@media (max-width: 720px){
+  .io-table-head{ display:none; }
+  .io-row{ grid-template-columns: 1fr; gap:4px; }
+  .io-row .io-price{ text-align:left; margin-top:4px; }
+  .io-row span::before{ content: attr(data-label) ": "; color: var(--steel); font-family:'IBM Plex Mono', monospace; font-size:0.65rem; text-transform:uppercase; }
+  .io-row .io-model::before{ content:none; }
+}
+.cennik-search-wrap{ margin-bottom: 14px; }
+.cennik-search{
+  width:100%;
+  max-width: 480px;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--off-white);
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 11px 16px;
+  outline: none;
+  transition: border-color .15s;
+}
+.cennik-search::placeholder{ color: var(--steel); }
+.cennik-search:focus{ border-color: var(--amber); }
+.cennik-empty{
+  padding: 24px 18px;
+  text-align:center;
+  color: var(--steel);
+  font-size: 0.88rem;
+  background: var(--graphite);
+  border-top: 1px solid var(--panel-line);
+}
+@media (max-width: 720px){
+  .cennik-table-head{ display:none; }
+  .cennik-row{ grid-template-columns: 1fr; gap:4px; padding: 14px 18px; }
+  .cennik-row .c-price{ text-align:left; margin-top:4px; }
+}
+
+.doc-search-wrap{
+  position: relative;
+  margin-bottom: 18px;
+  max-width: 480px;
+}
+.doc-search-icon{
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--steel);
+  pointer-events: none;
+  transition: color .15s;
+}
+.doc-search{
+  width:100%;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--off-white);
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 11px 16px 11px 40px;
+  outline: none;
+  transition: border-color .15s;
+}
+.doc-search::placeholder{ color: var(--steel); }
+.doc-search:focus{ border-color: var(--amber); }
+.doc-search:focus ~ .doc-search-icon{ color: var(--amber); }
+.doc-search-result-heading{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--signal-green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 3px;
+}
+
+.news-list{
+  display:flex; flex-direction:column; gap:1px;
+  background: var(--panel-line);
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.news-item{
+  background: var(--panel);
+  color: var(--off-white);
+}
+.news-item-head{
+  padding: 20px 24px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  cursor:pointer;
+  transition: background .15s;
+}
+.news-item-head:hover{ background:#242c33; }
+.news-item h3{ font-family:'Space Grotesk', sans-serif; font-size:1rem; font-weight:600; flex:1; }
+.news-item .news-date{ font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color: var(--steel); white-space:nowrap; flex-shrink:0; }
+.news-item .news-arrow{ color: var(--steel); flex-shrink:0; transition: transform .2s; }
+.news-item.open .news-arrow{ transform: rotate(180deg); color: var(--amber); }
+.news-body{
+  max-height:0;
+  overflow:hidden;
+  transition: max-height .35s ease;
+  padding: 0 24px;
+}
+.news-item.open .news-body{ max-height: 760px; padding: 0 24px 22px; }
+.news-tag{
+  display:inline-block;
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--amber);
+  border:1px solid var(--amber-dim);
+  padding: 3px 9px;
+  border-radius: 3px;
+  margin-bottom: 12px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
+.news-body-img{
+  display:block;
+  width:100%;
+  max-width: 420px;
+  border-radius: 6px;
+  border:1px solid var(--panel-line);
+  margin-bottom: 14px;
+}
+.news-body p{ color: var(--steel); font-size:0.9rem; line-height:1.6; }
+
+.realizacje-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--panel-line);
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.realizacja-card{ background: var(--panel); display:flex; flex-direction:column; }
+.realizacja-photo{
+  width:100%;
+  aspect-ratio: 16/10;
+  background: var(--graphite);
+  overflow:hidden;
+  border-bottom: 1px solid var(--panel-line);
+}
+.realizacja-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition: transform .3s; }
+.realizacja-card:hover .realizacja-photo img{ transform: scale(1.04); }
+.realizacja-body{ padding: 20px 22px 24px; flex:1; }
+.realizacja-card h3{ font-family:'Space Grotesk', sans-serif; font-size:1.0rem; font-weight:600; margin-bottom:12px; line-height:1.3;}
+.realizacja-meta{ display:flex; flex-direction:column; gap:6px; }
+.realizacja-meta span{ font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color: var(--steel); }
+.realizacja-meta span b{ color: var(--amber); font-weight:500; }
+
+/* downloads */
+.downloads-wrap{ display:flex; flex-direction:column; gap: 28px; }
+.download-group{
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 26px 28px;
+}
+.download-group h3{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 1.05rem;
+  font-weight:600;
+  margin-bottom: 6px;
+}
+.download-group .group-sub{ color: var(--steel); font-size:0.85rem; margin-bottom:18px; }
+.download-list{ display:flex; flex-direction:column; gap:1px; background:var(--panel-line); border:1px solid var(--panel-line); border-radius:6px; overflow:hidden;}
+.download-item{
+  background: var(--graphite);
+  padding: 14px 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-decoration:none;
+  color: var(--off-white);
+  transition: background .15s;
+  font-size:0.9rem;
+}
+.download-item:hover{ background:#242c33; }
+.download-item .dl-icon{
+  font-family:'IBM Plex Mono', monospace;
+  color: var(--amber);
+  font-size:0.75rem;
+  border:1px solid var(--amber-dim);
+  padding: 3px 8px;
+  border-radius:3px;
+  flex-shrink:0;
+}
+.download-item .dl-name{ flex:1; }
+.download-item .dl-arrow{ color: var(--steel); }
+
+/* cert tabs */
+.cert-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--panel-line);
+}
+.cert-tab-btn{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 4px;
+  border:1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--steel);
+  cursor:pointer;
+  transition: all .15s;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.cert-tab-btn .cert-count{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  background: var(--graphite);
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  padding: 1px 7px;
+  color: var(--steel);
+}
+.cert-tab-btn:hover{ border-color: var(--steel); color: var(--off-white); }
+.cert-tab-btn.active{
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--graphite);
+  font-weight:600;
+}
+.cert-tab-btn.active .cert-count{
+  background: rgba(0,0,0,0.15);
+  border-color: transparent;
+  color: var(--graphite);
+}
+.cert-panel{ display:none; }
+.cert-panel.active{ display:block; padding-top: 16px; }
+.cert-group-heading{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--off-white);
+  margin: 18px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--panel-line);
+}
+.cert-panel > .download-list:first-of-type,
+.cert-group-heading:first-of-type{ margin-top: 4px; }
+@media (max-width: 640px){
+  .cert-tab-btn{ font-size: 0.78rem; padding: 9px 12px; }
+}
+.call-btn{
+  border:1px solid var(--amber-dim);
+  color: var(--amber);
+  padding: 8px 16px;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  text-decoration:none;
+  font-family:'IBM Plex Mono', monospace;
+  white-space:nowrap;
+  transition: background .2s, color .2s;
+}
+.call-btn:hover{ background: var(--amber); color: var(--graphite); }
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;
+  padding: 100px 6vw 90px;
+  overflow:hidden;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items:center;
+  max-width:1240px;
+  margin:0 auto;
+  position:relative;
+  z-index:2;
+}
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  color: var(--signal-green);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.eyebrow::before{
+  content:"";
+  width:22px; height:1px;
+  background: var(--signal-green);
+}
+h1{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:600;
+  font-size: clamp(2.1rem, 4.4vw, 3.4rem);
+  line-height:1.08;
+  letter-spacing:-0.01em;
+  margin-bottom: 22px;
+}
+h1 span{ color: var(--amber); }
+.hero-desc{
+  color: var(--steel);
+  font-size: 1.05rem;
+  max-width: 480px;
+  margin-bottom: 34px;
+}
+.hero-ctas{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom: 40px;}
+.btn-primary{
+  background: var(--amber);
+  color: var(--graphite);
+  font-weight:600;
+  padding: 13px 26px;
+  border-radius: 3px;
+  text-decoration:none;
+  font-size:0.95rem;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn-primary:hover{ transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,163,61,0.25); }
+.btn-secondary{
+  border:1px solid var(--panel-line);
+  color: var(--off-white);
+  padding: 13px 26px;
+  border-radius:3px;
+  text-decoration:none;
+  font-size:0.95rem;
+  transition: border-color .15s;
+}
+.btn-secondary:hover{ border-color: var(--steel); }
+
+.rating-row{
+  display:flex; align-items:center; gap:14px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.85rem;
+  color: var(--steel);
+}
+.stars{ color: var(--amber); letter-spacing:2px; }
+
+/* schematic panel */
+.panel-card{
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 6px;
+  padding: 26px;
+  position:relative;
+}
+.panel-card .panel-head{
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.75rem;
+  color: var(--steel);
+  margin-bottom: 18px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+}
+.led-row{ display:flex; gap:7px; }
+.led{ width:8px;height:8px;border-radius:50%; background: var(--panel-line); }
+.led.on{ background: var(--signal-green); box-shadow: 0 0 8px rgba(82,183,136,0.7); animation: blink 3s ease-in-out infinite; }
+.led.warn{ background: var(--amber); box-shadow: 0 0 8px rgba(232,163,61,0.6); animation: blink 2.1s ease-in-out infinite .4s;}
+
+svg#duct-diagram{ width:100%; height:auto; display:block; }
+.flow-dot{ fill: var(--amber); opacity: 0.85; }
+.fan-icon{ width:16px; height:16px; vertical-align: -3px; margin-right: 4px; }
+.fan-rotor{ transform-origin: 12px 12px; animation: fan-spin 2.4s linear infinite; }
+@keyframes fan-spin{ to{ transform: rotate(360deg); } }
+.duct-node circle{ fill: var(--panel); stroke: var(--wire-blue); stroke-width:1.6; }
+.duct-node.active circle{ stroke: var(--signal-green); }
+.duct-node .pulse{ fill:none; stroke: var(--signal-green); stroke-width:1.4; opacity:0; }
+.duct-node.active .pulse{ animation: pulse 2.4s ease-out infinite; }
+@keyframes pulse{
+  0%{ r:7; opacity:0.9; }
+  100%{ r:22; opacity:0; }
+}
+.duct-line{ stroke: var(--panel-line); stroke-width:2; fill:none; }
+.duct-label{ font-family:'IBM Plex Mono', monospace; font-size:9px; fill: var(--steel); }
+.duct-value{ font-family:'IBM Plex Mono', monospace; font-size:10px; fill: var(--off-white); font-weight:500; }
+
+/* ---------- sections ---------- */
+section{ padding: 90px 6vw; }
+.section-inner{ max-width:1240px; margin:0 auto; }
+.section-head{ margin-bottom: 54px; max-width:640px; }
+.section-head .eyebrow{ margin-bottom:14px; }
+.section-head h2{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight:600;
+  margin-bottom: 14px;
+  position: relative;
+  padding-bottom: 14px;
+}
+.section-head h2::after{
+  content:"";
+  position:absolute;
+  left:0; bottom:0;
+  width: 64px; height: 3px;
+  background: var(--amber);
+}
+.section-head h2::before{
+  content:"";
+  position:absolute;
+  left:70px; bottom:1px;
+  width: 34px; height: 1px;
+  background: var(--panel-line);
+}
+.section-head p{ color: var(--steel); font-size:1rem; }
+
+/* services grid */
+.services-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--panel-line);
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.service-card{
+  background: var(--panel);
+  padding: 32px 28px;
+  transition: background .2s;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+}
+.service-card::before, .service-card::after{
+  content:"";
+  position:absolute;
+  width: 14px; height: 14px;
+  border: 2px solid var(--amber);
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+}
+.service-card::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.service-card::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
+.service-card:hover::before, .service-card:hover::after{ opacity: 1; }
+.service-card:hover, .service-card:focus-visible{ background:#242c33; }
+.service-card:focus-visible{ box-shadow: inset 0 0 0 1px var(--amber); }
+.service-num{
+  font-family:'IBM Plex Mono', monospace;
+  color: var(--amber);
+  font-size:0.78rem;
+  margin-bottom: 16px;
+}
+.service-card h3{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+  font-weight:600;
+}
+.service-card p{ color: var(--steel); font-size:0.92rem; margin-bottom: 18px; }
+.service-hint{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--signal-green);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.service-hint span{ transition: transform .2s; }
+.service-card:hover .service-hint span{ transform: translateX(4px); }
+.oferta-note{
+  margin-top: 22px;
+  color: var(--steel);
+  font-size: 0.85rem;
+  font-family:'IBM Plex Mono', monospace;
+}
+
+/* product modal */
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(10,12,14,0.72);
+  backdrop-filter: blur(3px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 5vh 5vw;
+  z-index: 100;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .2s;
+}
+.modal-overlay.open{ opacity:1; pointer-events:auto; }
+.modal-box{
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  max-width: 720px;
+  width:100%;
+  max-height: 82vh;
+  overflow-y:auto;
+  padding: 40px;
+  position:relative;
+  transform: translateY(10px);
+  transition: transform .2s;
+}
+.modal-overlay.open .modal-box{ transform: translateY(0); }
+.modal-close{
+  position: absolute;
+  top: 22px; right: 22px;
+  width: 34px; height:34px;
+  border-radius: 4px;
+  border:1px solid var(--panel-line);
+  background: transparent;
+  color: var(--steel);
+  font-size: 1rem;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: border-color .2s, color .2s;
+}
+.modal-close:hover{ border-color: var(--amber); color: var(--amber); }
+.modal-eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  color: var(--signal-green);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.modal-box h3{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight:600;
+  margin-bottom: 8px;
+  padding-right: 40px;
+}
+.modal-box > p.modal-desc{
+  color: var(--steel);
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+  max-width: 560px;
+}
+.product-list{ display:flex; flex-direction:column; gap:1px; background: var(--panel-line); border:1px solid var(--panel-line); border-radius:6px; overflow:hidden;}
+.product-item{
+  background: var(--graphite);
+  padding: 16px 20px;
+  display:flex;
+  gap:16px;
+  align-items:center;
+  cursor: pointer;
+  transition: background .15s;
+  border:none;
+  width:100%;
+  text-align:left;
+  font-family:'IBM Plex Sans', sans-serif;
+  color: var(--off-white);
+}
+.product-item:hover, .product-item:focus-visible{ background:#242c33; outline:none; }
+.product-thumb{
+  flex-shrink:0;
+  width: 88px; height:88px;
+  border-radius:8px;
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.product-thumb svg{ width:52px; height:52px; }
+.product-thumb img{ width:100%; height:100%; object-fit:cover; }
+.product-item-body{ flex:1; min-width:0; }
+.product-item .p-name{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:0.98rem; margin-bottom:4px;}
+.product-item .p-desc{ color: var(--steel); font-size:0.86rem; }
+.product-item .p-price{ color: var(--signal-green); font-size:0.8rem; font-family:'IBM Plex Mono', monospace; margin-top:4px; }
+.product-item .p-arrow{ color: var(--steel); font-size:0.9rem; flex-shrink:0; transition: transform .15s; }
+.product-item:hover .p-arrow{ transform: translateX(4px); color: var(--amber); }
+.product-item .p-tag{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--amber);
+  border:1px solid var(--amber-dim);
+  padding: 3px 9px;
+  border-radius: 3px;
+  white-space:nowrap;
+  height: fit-content;
+  flex-shrink:0;
+}
+
+/* product detail view */
+.detail-back{
+  display:flex; align-items:center; gap:8px;
+  background:none; border:none; color: var(--steel);
+  font-family:'IBM Plex Mono', monospace; font-size:0.82rem;
+  cursor:pointer; padding: 0 0 20px 0;
+  transition: color .15s;
+}
+.detail-back:hover{ color: var(--amber); }
+.detail-header{ display:flex; gap:22px; align-items:flex-start; margin-bottom:22px;}
+.detail-thumb{
+  flex-shrink:0;
+  width: 168px; height:168px;
+  border-radius:10px;
+  background: var(--graphite);
+  border:1px solid var(--panel-line);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.detail-thumb svg{ width:96px; height:96px; }
+.detail-thumb img{ width:100%; height:100%; object-fit:cover; }
+.detail-price{
+  display:flex; align-items:center; gap:10px;
+  background: var(--graphite);
+  border:1px solid var(--panel-line);
+  border-radius:6px;
+  padding: 12px 16px;
+  margin-top: 4px;
+}
+.detail-price span{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--steel); text-transform:uppercase; letter-spacing:0.06em; }
+.detail-price b{ color: var(--amber); font-family:'IBM Plex Mono', monospace; font-size:0.92rem; font-weight:500; }
+.price-table{
+  margin-top: 14px;
+  border:1px solid var(--panel-line);
+  border-radius:6px;
+  overflow:hidden;
+}
+.price-table-head{
+  display:grid; grid-template-columns: 1.3fr 1.4fr 0.9fr; gap:10px;
+  background: var(--panel);
+  padding: 9px 14px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--steel);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+}
+.price-table-row{
+  display:grid; grid-template-columns: 1.3fr 1.4fr 0.9fr; gap:10px;
+  background: var(--graphite);
+  padding: 10px 14px;
+  border-top: 1px solid var(--panel-line);
+  font-size: 0.85rem;
+  align-items:center;
+}
+.price-table-row span:first-child{ color: var(--off-white); }
+.price-table-row .spec-col{ color: var(--steel); font-size:0.8rem; }
+.price-table-row span:last-child{ color: var(--amber); font-family:'IBM Plex Mono', monospace; font-size:0.82rem; white-space:nowrap; text-align:right; }
+@media (max-width: 560px){
+  .price-table-head, .price-table-row{ grid-template-columns: 1fr; }
+  .price-table-row span:last-child{ text-align:left; }
+}
+.detail-header h4{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight:600;
+  margin-bottom:8px;
+}
+.detail-tag{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--amber);
+  border:1px solid var(--amber-dim);
+  padding: 3px 9px;
+  border-radius: 3px;
+  display:inline-block;
+}
+.detail-body p{ color: var(--steel); font-size:0.94rem; margin-bottom:14px; }
+.detail-body p.detail-lead{ color: var(--off-white); }
+.detail-note{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--steel);
+  border-top: 1px solid var(--panel-line);
+  padding-top:16px;
+  margin-top: 6px;
+}
+
+/* why us */
+.why-wrap{
+  display:grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 60px;
+  align-items:start;
+}
+.why-list{ list-style:none; }
+.why-list li{
+  display:flex; gap:18px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--panel-line);
+}
+.why-list li:first-child{ padding-top:0; }
+.why-icon{
+  font-family:'IBM Plex Mono', monospace;
+  color: var(--signal-green);
+  font-size: 0.85rem;
+  flex-shrink:0;
+  padding-top:3px;
+}
+.why-list h4{ font-family:'Space Grotesk',sans-serif; font-weight:600; margin-bottom:5px; font-size:1.02rem;}
+.why-list p{ color: var(--steel); font-size:0.92rem; }
+
+.spec-panel{
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius:6px;
+  padding: 30px;
+  font-family:'IBM Plex Mono', monospace;
+}
+.spec-row{
+  display:flex; justify-content:space-between;
+  padding: 13px 0;
+  border-bottom: 1px dashed var(--panel-line);
+  font-size:0.86rem;
+}
+.spec-row:last-child{ border-bottom:none; }
+.spec-row span:first-child{ color: var(--steel); }
+.spec-row span:last-child{ color: var(--amber); }
+
+/* reviews */
+.reviews-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.review-card{
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius:6px;
+  padding: 26px;
+}
+.review-stars{ color: var(--amber); letter-spacing:2px; margin-bottom:14px; font-size:0.9rem;}
+.review-card p{ color: var(--off-white); font-size:0.95rem; margin-bottom:18px; }
+.review-author{ color: var(--steel); font-size:0.82rem; font-family:'IBM Plex Mono', monospace; }
+
+.rating-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap: 20px;
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 24px 30px;
+  margin-bottom: 30px;
+}
+.rating-score{ display:flex; align-items:center; gap:18px; }
+.rating-number{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 2.4rem;
+  font-weight:700;
+  color: var(--amber);
+  line-height:1;
+}
+.rating-count{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--steel);
+}
+
+/* contact */
+.contact-wrap{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 50px;
+}
+.contact-info h2{ font-family:'Space Grotesk',sans-serif; font-size:1.7rem; margin-bottom:18px;}
+.contact-info p{ color:var(--steel); margin-bottom: 28px; max-width:400px;}
+.contact-row{ display:flex; gap:14px; padding: 14px 0; border-bottom:1px solid var(--panel-line); font-size:0.92rem;}
+.contact-row:last-of-type{border-bottom:none;}
+.contact-row .label{ color: var(--steel); width:90px; flex-shrink:0; font-family:'IBM Plex Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; padding-top:2px;}
+.social-links{ display:flex; gap:14px; margin-top:24px;}
+.social-links a{
+  border:1px solid var(--panel-line);
+  padding: 8px 16px;
+  border-radius:3px;
+  text-decoration:none;
+  font-size:0.85rem;
+  color: var(--off-white);
+  transition:border-color .2s, color .2s;
+}
+.social-links a:hover{ border-color: var(--amber); color: var(--amber); }
+
+.hours-panel{
+  background: var(--graphite);
+  border:1px solid var(--panel-line);
+  border-radius:6px;
+  padding: 26px;
+}
+.hours-panel .panel-head{ margin-bottom:16px; }
+.hour-row{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.85rem; padding:9px 0; color:var(--steel);}
+.hour-row.today{ color: var(--off-white); }
+.hour-row .status{ color: var(--amber); font-size:0.78rem; }
+
+.people-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.person-card{
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 22px;
+  display:flex;
+  gap:16px;
+  align-items:center;
+}
+.person-avatar{
+  width:56px; height:56px;
+  border-radius:50%;
+  flex-shrink:0;
+  background: var(--graphite);
+  border:1px solid var(--panel-line);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  color: var(--amber);
+}
+.person-dept{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--signal-green); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+.person-body h3{ font-family:'Space Grotesk', sans-serif; font-size:1rem; font-weight:600; margin-bottom:6px; }
+.person-body a{ display:block; color: var(--steel); font-size:0.85rem; text-decoration:none; transition:color .15s; }
+.person-body a:hover{ color: var(--amber); }
+
+.map-panel{
+  margin-top: 24px;
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  overflow:hidden;
+  filter: grayscale(0.3) contrast(1.05);
+}
+.map-panel iframe{ display:block; }
+
+.contact-form-panel{
+  margin-top: 24px;
+  background: var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius: 8px;
+  padding: 30px;
+}
+.contact-form-panel h3{ font-family:'Space Grotesk', sans-serif; font-size:1.1rem; font-weight:600; margin-bottom:18px; }
+.contact-form-panel form{ display:flex; flex-direction:column; gap:16px; }
+.contact-form-panel .form-row{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+.contact-form-panel label{ display:flex; flex-direction:column; gap:6px; font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--steel); text-transform:uppercase; letter-spacing:0.05em; }
+.contact-form-panel input, .contact-form-panel textarea{
+  background: var(--graphite);
+  border:1px solid var(--panel-line);
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: var(--off-white);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size: 0.92rem;
+  text-transform:none;
+  letter-spacing:normal;
+  resize: vertical;
+}
+.contact-form-panel input:focus, .contact-form-panel textarea:focus{ outline:none; border-color: var(--amber); }
+.contact-form-panel button{ align-self:flex-start; margin-top:6px; }
+@media (max-width: 600px){
+  .contact-form-panel .form-row{ grid-template-columns: 1fr; }
+}
+
+footer{
+  padding: 34px 6vw;
+  border-top:1px solid var(--panel-line);
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+  color: var(--steel);
+  font-size:0.82rem;
+  font-family:'IBM Plex Mono', monospace;
+}
+.footer-status{ display:inline-flex; align-items:center; gap:8px; }
+
+.hamburger-btn{
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  width:34px; height:34px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:0;
+  flex-shrink:0;
+}
+.hamburger-btn span{
+  display:block;
+  width:100%;
+  height:2px;
+  background: var(--off-white);
+  border-radius:2px;
+  transition: transform .25s, opacity .2s;
+}
+.hamburger-btn.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.open span:nth-child(2){ opacity:0; }
+.hamburger-btn.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-nav-overlay{
+  display:none;
+  position: fixed;
+  inset: 0;
+  top: 61px;
+  background: var(--graphite);
+  z-index: 49;
+  overflow-y:auto;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .2s;
+}
+.mobile-nav-overlay.open{ opacity:1; pointer-events:auto; }
+.mobile-nav{
+  display:flex;
+  flex-direction:column;
+  padding: 12px 6vw 32px;
+}
+.mobile-nav-link{
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--panel-line);
+  color: var(--off-white);
+  text-decoration:none;
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight:600;
+}
+.mobile-nav-link.active{ color: var(--amber); }
+.mobile-nav-call{
+  margin-top: 24px;
+  text-align:center;
+  padding: 14px;
+  border:1px solid var(--amber-dim);
+  color: var(--amber);
+  border-radius: 4px;
+  text-decoration:none;
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.95rem;
+}
+
+.hmi-strip{
+  display:flex;
+  gap: 34px;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 7px 6vw;
+  background: #10141a;
+  border-bottom: 1px solid var(--panel-line);
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--steel);
+  text-transform: uppercase;
+}
+.hmi-item{ display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
+.hmi-dot{
+  width:6px; height:6px; border-radius:50%;
+  background: var(--steel);
+  display:inline-block;
+}
+.hmi-dot.ok{ background: var(--signal-green); box-shadow: 0 0 5px rgba(82,183,136,0.6); }
+@media (max-width: 880px){
+  .hmi-strip{ gap: 24px; padding: 6px 5vw; }
+}
+
+@media (max-width: 880px){
+  .hero-grid, .why-wrap, .contact-wrap{ grid-template-columns: 1fr; }
+  .services-grid, .reviews-grid{ grid-template-columns: 1fr; }
+  nav{ display:none; }
+  .hamburger-btn{ display:flex; }
+  .mobile-nav-overlay{ display:block; }
+  header{ padding: 14px 5vw; }
+  .call-btn{ display:none; }
+}
+
+@media (max-width: 640px){
+  section{ padding: 56px 5vw; }
+  .hero{ padding: 48px 5vw 56px; }
+  h1{ font-size: clamp(1.7rem, 7vw, 2.2rem); }
+  .hero-desc{ font-size: 0.95rem; }
+  .section-head h2{ font-size: 1.4rem; }
+  .panel-card{ padding: 18px; }
+  .service-card{ padding: 24px 20px; }
+  .cennik-head{ flex-direction:column; align-items:flex-start; }
+  .cennik-head .btn-secondary{ width:100%; text-align:center; }
+  .detail-header{ flex-direction:column; align-items:flex-start; gap:14px; }
+  .detail-thumb{ width:100px; height:100px; }
+  .detail-thumb svg{ width:56px; height:56px; }
+  .modal-overlay{ padding: 0; align-items:flex-end; }
+  .modal-box{ padding: 26px 20px; border-radius: 12px 12px 0 0; max-height: 90vh; }
+  .contact-form-panel .form-row{ grid-template-columns: 1fr; }
+  .contact-form-panel{ padding: 22px; }
+  .people-grid{ grid-template-columns: 1fr; }
+  .person-card{ padding: 18px; }
+  .map-panel iframe{ height: 240px; }
+  .rating-summary{ flex-direction:column; align-items:flex-start; }
+  .news-item-head{ padding: 16px 18px; gap:10px; }
+  .news-item h3{ font-size:0.92rem; }
+  .news-body{ padding: 0 18px; }
+  .news-item.open .news-body{ padding: 0 18px 18px; }
+  .download-item{ padding: 14px; font-size:0.85rem; flex-wrap:wrap; }
+  .realizacja-body{ padding: 16px 18px 20px; }
+  .io-table-head{ display:none; }
+  .io-row{ grid-template-columns: 1fr; gap:4px; }
+  .io-row .io-price{ text-align:left; margin-top:4px; }
+  .cennik-search{ font-size: 16px; }
+  .doc-search{ font-size: 16px; }
+  .contact-form-panel input, .contact-form-panel textarea{ font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .led.on, .led.warn, .logo .dot, .duct-node.active .pulse, .fan-rotor{ animation:none; }
+  .flow-dot{ display:none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo on-start" data-page="start" role="button" tabindex="0" style="cursor:pointer;" aria-label="Smart Controls — strona główna">
+    <img class="logo-img" src="assets/logo-dark-theme.png" alt="Smart Controls">
+  </div>
+  <nav>
+    <a href="#" data-page="oferta" class="nav-link">Oferta</a>
+    <a href="#" data-page="aktualnosci" class="nav-link">Aktualności</a>
+    <a href="#" data-page="realizacje" class="nav-link">Realizacje</a>
+    <a href="#" data-page="pobrania" class="nav-link">Do pobrania</a>
+    <a href="#" data-page="kontakt" class="nav-link">Kontakt</a>
+  </nav>
+  <a class="call-btn" href="tel:578430694">☎ 578 430 694</a>
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Otwórz menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="hmi-strip" aria-hidden="true">
+  <span class="hmi-item"><span class="hmi-dot ok"></span>SYSTEM: ONLINE</span>
+  <span class="hmi-item">NAWIEW: 21.4°C</span>
+  <span class="hmi-item">WYWIEW: 23.1°C</span>
+  <span class="hmi-item">CO₂: 612 ppm</span>
+  <span class="hmi-item"><span class="hmi-dot ok"></span>FILTR: OK</span>
+  <span class="hmi-item">PRZEPUSTNICA: 78%</span>
+  <span class="hmi-item"><span class="hmi-dot ok"></span>MODBUS RTU: POŁĄCZONO</span>
+  <span class="hmi-item">ODZYSK CIEPŁA: 84%</span>
+</div>
+
+<div class="mobile-nav-overlay" id="mobileNavOverlay">
+  <nav class="mobile-nav">
+    <a href="#" data-page="oferta" class="mobile-nav-link">Oferta</a>
+    <a href="#" data-page="aktualnosci" class="mobile-nav-link">Aktualności</a>
+    <a href="#" data-page="realizacje" class="mobile-nav-link">Realizacje</a>
+    <a href="#" data-page="pobrania" class="mobile-nav-link">Do pobrania</a>
+    <a href="#" data-page="kontakt" class="mobile-nav-link">Kontakt</a>
+    <a href="tel:578430694" class="mobile-nav-call">☎ Zadzwoń: 578 430 694</a>
+  </nav>
+</div>
+
+
+<div class="page active" id="page-start">
+<section class="hero blueprint-bg">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Automatyka HVAC · Rumia</div>
+      <h1>Sterowanie, które <span>reaguje</span> zanim zdążysz o nim pomyśleć.</h1>
+      <p class="hero-desc">Projektujemy, dostarczamy i serwisujemy systemy automatyki wentylacji i klimatyzacji — od pojedynczego czujnika po całą rozdzielnicę sterującą instalacją budynku.</p>
+      <div class="hero-ctas">
+        <a class="btn-primary" href="#" data-page="kontakt">Zapytaj o wycenę</a>
+        <a class="btn-secondary" href="#" data-page="oferta">Zobacz ofertę</a>
+      </div>
+      <div class="rating-row">
+        <span class="stars">★★★★★</span> 5,0 / 5 — 5 opinii Google · Siedziba w Rumi
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-head">
+        <span><svg class="fan-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="fan-rotor"><path d="M12 12 C12 8, 14 4.5, 12 2 C9 3.5, 9.5 8.5, 12 12Z" fill="var(--amber)"/><path d="M12 12 C15.5 12, 19 14, 21.5 12.5 C20 9.5, 15 9.7, 12 12Z" fill="var(--amber)"/><path d="M12 12 C10 15, 8.5 19, 5 19.5 C4.8 16, 8.8 13.5, 12 12Z" fill="var(--amber)"/></g><circle cx="12" cy="12" r="2.2" fill="var(--off-white)"/></svg> SC-CTRL — panel podglądu</span>
+        <div class="led-row">
+          <div class="led on"></div>
+          <div class="led on"></div>
+          <div class="led warn"></div>
+        </div>
+      </div>
+      <svg id="duct-diagram" viewBox="0 0 400 230" xmlns="http://www.w3.org/2000/svg">
+        <path id="flow-path-1" class="duct-line" d="M30,40 H180 V190 H370"/>
+        <path id="flow-path-2" class="duct-line" d="M180,40 H370"/>
+        <path id="flow-path-3" class="duct-line" d="M180,115 H370"/>
+
+        <circle class="flow-dot" r="2.6">
+          <animateMotion dur="5s" repeatCount="indefinite"><mpath href="#flow-path-1"/></animateMotion>
+        </circle>
+        <circle class="flow-dot" r="2.6">
+          <animateMotion dur="5s" begin="1.6s" repeatCount="indefinite"><mpath href="#flow-path-1"/></animateMotion>
+        </circle>
+        <circle class="flow-dot" r="2.6">
+          <animateMotion dur="3.6s" repeatCount="indefinite"><mpath href="#flow-path-2"/></animateMotion>
+        </circle>
+        <circle class="flow-dot" r="2.6">
+          <animateMotion dur="3.6s" begin="1.8s" repeatCount="indefinite"><mpath href="#flow-path-2"/></animateMotion>
+        </circle>
+        <circle class="flow-dot" r="2.6">
+          <animateMotion dur="4.2s" begin="0.8s" repeatCount="indefinite"><mpath href="#flow-path-3"/></animateMotion>
+        </circle>
+
+        <g class="duct-node active" transform="translate(30,40)">
+          <circle class="pulse" r="7"/>
+          <circle r="7"/>
+          <text class="duct-label" x="-24" y="-13">CZERPNIA</text>
+          <text class="duct-value" x="14" y="4">18.2°C</text>
+        </g>
+
+        <g class="duct-node active" transform="translate(370,40)">
+          <circle class="pulse" r="7"/>
+          <circle r="7"/>
+          <text class="duct-label" x="-58" y="-13">NAWIEW</text>
+          <text class="duct-value" x="-46" y="4">21.4°C</text>
+        </g>
+
+        <g class="duct-node" transform="translate(370,115)">
+          <circle r="7"/>
+          <text class="duct-label" x="-70" y="-13">CO2 · JAKOŚĆ POW.</text>
+          <text class="duct-value" x="-30" y="4">612 ppm</text>
+        </g>
+
+        <g class="duct-node active" transform="translate(370,190)">
+          <circle class="pulse" r="7"/>
+          <circle r="7"/>
+          <text class="duct-label" x="-58" y="-13">WYWIEW</text>
+          <text class="duct-value" x="-46" y="4">23.1°C</text>
+        </g>
+      </svg>
+      <div class="spec-row" style="margin-top:6px;">
+        <span>Status siłownika przepustnicy</span>
+        <span>OTWARTY · 78%</span>
+      </div>
+      <div class="spec-row">
+        <span>Presostat różnicowy</span>
+        <span>W NORMIE</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="dlaczego" class="blueprint-bg">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Dlaczego my</div>
+      <h2>Fachowe doradztwo zamiast gotowca z katalogu</h2>
+    </div>
+    <div class="why-wrap">
+      <ul class="why-list">
+        <li>
+          <span class="why-icon">01</span>
+          <div><h4>Fachowe doradztwo</h4><p>Dobieramy automatykę do realnej instalacji, nie odwrotnie.</p></div>
+        </li>
+        <li>
+          <span class="why-icon">02</span>
+          <div><h4>Rozwiązania standardowe i dedykowane</h4><p>Pełen zakres automatyki HVAC — od katalogowych po projektowane pod klienta.</p></div>
+        </li>
+        <li>
+          <span class="why-icon">03</span>
+          <div><h4>Najwyższa jakość produktów</h4><p>Autoryzowany dystrybutor NENUTEC oraz prefabrykacja rozdzielnic własnej produkcji.</p></div>
+        </li>
+        <li>
+          <span class="why-icon">04</span>
+          <div><h4>Konkurencyjne ceny i szybka realizacja</h4><p>Krótkie terminy dostaw i wdrożeń bez podnoszenia kosztów.</p></div>
+        </li>
+      </ul>
+      <div class="spec-panel">
+        <div class="spec-row"><span>Forma działalności</span><span>Spółka cywilna</span></div>
+        <div class="spec-row"><span>Siedziba</span><span>Rumia</span></div>
+        <div class="spec-row"><span>Zakres</span><span>Handel / produkcja / usługi</span></div>
+        <div class="spec-row"><span>Specjalizacja</span><span>Automatyka HVAC</span></div>
+        <div class="spec-row"><span>Dystrybucja</span><span>NENUTEC</span></div>
+        <div class="spec-row"><span>Ocena klientów</span><span>5,0 / 5</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="opinie">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Opinie</div>
+      <h2>Co mówią klienci</h2>
+      <p>Oceny zebrane z wizytówki Google firmy Smart Controls S.C.</p>
+    </div>
+
+    <div class="rating-summary">
+      <div class="rating-score">
+        <span class="rating-number">5,0</span>
+        <div>
+          <div class="review-stars" style="margin-bottom:4px;">★★★★★</div>
+          <div class="rating-count">na podstawie 5 opinii Google</div>
+        </div>
+      </div>
+      <a class="btn-secondary" href="https://www.google.com/search?client=opera-gx&hs=0So&sca_esv=ba3772bf42af157a&q=Smart+Controls+S.C.+Opinie&rflfq=1&num=20&stick=H4sIAAAAAAAAAONgkxIxNDcwsrQwMLWwNDYyNTYxNTY1M9jAyPiKUSo4N7GoRME5P6-kKD-nWCFYz1lPwb8gMy8zdRErHkkAKYEry1UAAAA&rldimm=17029805893253453560&tbm=lcl&hl=pl-PL&sa=X&ved=2ahUKEwifnZ627LuVAxXsHhAIHZpFGCIQ9fQKegQIKBAG#lkt=LocalPoiReviews" target="_blank" rel="noopener">Zobacz wszystkie opinie na Google →</a>
+    </div>
+
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>„W 100% profesjonaliści. Z takimi to miło współpracować. Polecam.”</p>
+        <div class="review-author">Piotr Labudda</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>„Super firma, 100% profesjonaliści.”</p>
+        <div class="review-author">AD Rotam</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>„Ok.”</p>
+        <div class="review-author">Adam Zielony</div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="page" id="page-oferta">
+<section id="oferta">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Oferta</div>
+      <h2>Kompletna automatyka, nie tylko pojedyncze elementy</h2>
+      <p>Zajmujemy się działalnością handlową, produkcyjną i usługową — doradztwem, sprzedażą, montażem oraz serwisem systemów automatyki wentylacji i klimatyzacji.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card" data-category="rozdzielnice" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">01</div>
+        <h3>Automatyka wentylacji</h3>
+        <p>PremiumBOX+, PowerBOX+ oraz sterowniki SC-CTRL do central wentylacyjnych, rekuperatorów, nagrzewnic i chłodnic.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+      <div class="service-card" data-category="panele" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">02</div>
+        <h3>Moduły i panele</h3>
+        <p>Panele użytkownika central wentylacyjnych oraz moduły rozszerzające wejścia i wyjścia sterownika.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+      <div class="service-card" data-category="zawory" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">03</div>
+        <h3>Zawory regulacyjne i siłowniki</h3>
+        <p>Zawory strefowe, równoważące, kulowe, grzybkowe, motylkowe i do pary wraz z siłownikami NENUTEC.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+      <div class="service-card" data-category="czujniki" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">04</div>
+        <h3>Elementy pomiarowe automatyki</h3>
+        <p>Termostaty, higrostaty, presostaty, czujniki CO2, przepływu oraz regulatory klimakonwektorów.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+      <div class="service-card" data-category="silowniki-przepustnic" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">05</div>
+        <h3>Siłowniki przepustnic</h3>
+        <p>Siłowniki standardowe, szybkie, ze sprężyną zwrotną, z funkcją bezpieczeństwa oraz inteligentne VAV.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+      <div class="service-card" data-category="kvs" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">06</div>
+        <h3>Zawory KVS Valve</h3>
+        <p>Zawory zwrotne i pozostałe rozwiązania KVS Valve do wentylacji, instalacji wod-kan i przeciwpożarowych.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+      <div class="service-card" data-category="falowniki" tabindex="0" role="button" aria-haspopup="dialog">
+        <div class="service-num">07</div>
+        <h3>Falowniki</h3>
+        <p>Przemienniki częstotliwości EURA E-810, jedno- i trójfazowe, do regulacji pracy wentylatorów i pomp.</p>
+        <div class="service-hint">Zobacz produkty <span>→</span></div>
+      </div>
+    </div>
+    <p class="oferta-note">Kliknij kategorię, aby zobaczyć rozpisane produkty z oferty Smart Controls.</p>
+
+    <div class="cennik-section">
+      <div class="cennik-head">
+        <div>
+          <div class="eyebrow">Cennik</div>
+          <h2 style="font-size:1.4rem; margin-bottom:6px;">Pełny cennik produktów</h2>
+          <p style="color:var(--steel); font-size:0.92rem; max-width:640px;">Rozpisane modele wraz z cenami katalogowymi, na podstawie „Katalogu układów i elementów automatyki” Smart Controls (ceny obowiązują od 1 marca 2025, wersja 1/2025). Możliwe rabaty: do 35% na siłowniki przepustnic, do 25% na zawory i siłowniki zaworów oraz elementy pomiarowe. Falowniki i sterownice wyceniane indywidualnie.</p>
+        </div>
+        <a class="btn-secondary" href="assets/uploads/2021/01/CennikSmartControls2021-strona.pdf" target="_blank" rel="noopener">Pobierz cennik PDF</a>
+      </div>
+
+      <div class="io-section">
+        <h3 style="font-size:1.05rem; margin-bottom:6px;">Moduły i regulatory — wg liczby wejść / wyjść</h3>
+        <p style="color:var(--steel); font-size:0.88rem; max-width:640px; margin-bottom:14px;">Modele z rodziny modułów rozszerzających I/O oraz regulatorów VAV różnią się liczbą fizycznych wejść i wyjść — poniżej rozpisane warianty.</p>
+        <div class="io-table-wrap">
+          <div class="io-table-head">
+            <span>Model</span><span>Wejścia analogowe</span><span>Wejścia cyfrowe</span><span>Wyjścia analogowe</span><span>Wyjścia cyfrowe</span><span>Cena</span>
+          </div>
+          <div id="ioTableBody"></div>
+        </div>
+      </div>
+
+      <div class="cennik-search-wrap">
+        <input type="text" id="cennikSearch" class="cennik-search" placeholder="Szukaj modelu lub specyfikacji (np. „NACA-20”, „DN50”, „0-10V”)…" autocomplete="off">
+      </div>
+      <div class="cennik-filters" id="cennikFilters"></div>
+      <div class="cennik-table-wrap">
+        <div class="cennik-table-head">
+          <span>Kategoria</span><span>Produkt</span><span>Model / wariant</span><span>Specyfikacja</span><span>Cena</span>
+        </div>
+        <div id="cennikBody"></div>
+        <div id="cennikEmpty" class="cennik-empty" style="display:none;">Brak modeli spełniających wyszukiwane kryteria.</div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="page" id="page-aktualnosci">
+<section id="aktualnosci">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Aktualności</div>
+      <h2>Co nowego w naszej firmie</h2>
+      <p>Wpisy przeniesione z bloga „Aktualności" na smartcontrols.pl — nowości produktowe, katalogi oraz informacje branżowe.</p>
+    </div>
+    <div class="news-list" id="newsList"></div>
+  </div>
+</section>
+</div>
+
+<div class="page" id="page-realizacje">
+<section id="realizacje">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Realizacje</div>
+      <h2>Ponad 80 wdrożeń od 2014 roku</h2>
+      <p>Pełna lista realizacji Smart Controls S.C. — od pojedynczych central wentylacyjnych po kompleksową automatykę szpitali, biurowców i zakładów produkcyjnych w całej Polsce.</p>
+    </div>
+    <div class="realizacje-grid" id="realizacjeGrid"></div>
+  </div>
+</section>
+</div>
+
+<div class="page" id="page-pobrania">
+<section id="pobrania">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Do pobrania</div>
+      <h2>Dokumentacja techniczna i cenniki</h2>
+      <p>Karty katalogowe, deklaracje zgodności i cenniki w formacie PDF — pliki pochodzą z biblioteki dokumentów smartcontrols.pl.</p>
+    </div>
+    <div class="downloads-wrap" id="downloadsWrap"></div>
+  </div>
+</section>
+</div>
+
+<div class="page" id="page-kontakt">
+<section id="kontakt" class="blueprint-bg">
+  <div class="section-inner">
+    <div class="contact-wrap">
+      <div class="contact-info">
+        <h2>Porozmawiajmy o Twojej instalacji</h2>
+        <p>Zadzwoń lub napisz — odpowiemy i dobierzemy odpowiednią automatykę do Twojego obiektu.</p>
+        <div class="contact-row"><span class="label">Adres</span><span>ul. Żwirki i Wigury 30<br>84-230 Rumia</span></div>
+        <div class="contact-row"><span class="label">NIP</span><span>588 23 96 912</span></div>
+        <div class="social-links">
+          <a href="https://www.facebook.com/SmartControlsPl/" target="_blank" rel="noopener">Facebook</a>
+          <a href="https://pl.linkedin.com/in/smart-controls-2a0b05255" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+      <div class="hours-panel">
+        <div class="panel-head">
+          <span>Godziny otwarcia</span>
+          <div class="led-row"><div class="led warn"></div></div>
+        </div>
+        <div class="hour-row today"><span>Poniedziałek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row"><span>Wtorek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row"><span>Środa</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row"><span>Czwartek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row"><span>Piątek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row"><span>Sobota</span><span>Zamknięte</span></div>
+        <div class="hour-row"><span>Niedziela</span><span>Zamknięte</span></div>
+        <div class="hour-row" style="border-top:1px solid var(--panel-line); margin-top:8px; padding-top:14px;">
+          <span class="status">● Obecnie zamknięte</span><span class="status">Otwarcie: pon. 08:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:36px; margin-bottom:20px;">
+      <div class="eyebrow">Działy</div>
+      <h2 style="font-size:1.4rem;">Informacje kontaktowe</h2>
+      <p style="max-width:640px;">Dane kontaktowe do poszczególnych działów, zgodnie z podziałem na oryginalnej stronie smartcontrols.pl.</p>
+    </div>
+    <div class="people-grid">
+      <div class="person-card">
+        <div class="person-avatar">DH</div>
+        <div class="person-body">
+          <span class="person-dept">Dział handlowy — rozdzielnice / zestawy</span>
+          <a href="mailto:oferta@smartcontrols.pl">oferta@smartcontrols.pl</a>
+          <a href="tel:583801170">58 380 11 70</a>
+        </div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">EA</div>
+        <div class="person-body">
+          <span class="person-dept">Dział handlowy — elementy automatyki</span>
+          <a href="mailto:pawel@smartcontrols.pl">pawel@smartcontrols.pl</a>
+          <a href="tel:+48578430694">+48 578 430 694</a>
+        </div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">PT</div>
+        <div class="person-body">
+          <span class="person-dept">Pomoc techniczna — uruchomienie central</span>
+          <a href="mailto:adam@smartcontrols.pl">adam@smartcontrols.pl</a>
+          <a href="tel:+48797780364">+48 797 780 364</a>
+        </div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">B</div>
+        <div class="person-body">
+          <span class="person-dept">Biuro</span>
+          <a href="mailto:patryk@smartcontrols.pl">patryk@smartcontrols.pl</a>
+          <a href="tel:+48602121571">+48 602 121 571</a>
+        </div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">R</div>
+        <div class="person-body">
+          <span class="person-dept">Reklamacje</span>
+          <a href="mailto:reklamacja@smartcontrols.pl">reklamacja@smartcontrols.pl</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-panel">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2312.4269836393996!2d18.384753951787342!3d54.57885008928086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46fda521d8c89297%3A0xe80b5bbf7f7dea55!2s%C5%BBwirki+i+Wigury+30%2C+84-230+Rumia!5e0!3m2!1spl!2spl!4v1530792846561" width="100%" height="340" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+
+    <div class="contact-form-panel">
+      <h3>Wyślij wiadomość</h3>
+      <form id="contactForm">
+        <div class="form-row">
+          <label>Osoba kontaktowa<input type="text" name="name" required placeholder="Imię i nazwisko"></label>
+          <label>Telefon kontaktowy<input type="tel" name="phone" placeholder="+48 ..."></label>
+        </div>
+        <label>Email<input type="email" name="email" required placeholder="jan.kowalski@firma.pl"></label>
+        <label>Wiadomość<textarea name="message" rows="4" required placeholder="Opisz krótko swoją instalację lub zapytanie..."></textarea></label>
+        <button type="submit" class="btn-primary" style="border:none; cursor:pointer;">Wyślij</button>
+      </form>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <span>© 2012–2026 Smart Controls S.C. · Rumia</span>
+  <span class="footer-status"><span class="hmi-dot ok"></span> AUTOMATYKA HVAC · SC-WEB v2.0 · Przykładowa strona</span>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose" aria-label="Zamknij">✕</button>
+    <div class="modal-eyebrow" id="modalEyebrow"></div>
+    <h3 id="modalTitle"></h3>
+    <p class="modal-desc" id="modalDesc"></p>
+    <div class="product-list" id="modalList"></div>
+  </div>
+</div>
+
+<script>
+const categoryIcons = {
+  rozdzielnice: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="6" width="32" height="36" rx="2" stroke="var(--wire-blue)" stroke-width="2"/><circle cx="16" cy="14" r="2.4" fill="var(--signal-green)"/><circle cx="24" cy="14" r="2.4" fill="var(--amber)"/><circle cx="32" cy="14" r="2.4" fill="var(--steel)"/><rect x="14" y="22" width="8" height="5" rx="1" stroke="var(--steel)" stroke-width="1.6"/><rect x="26" y="22" width="8" height="5" rx="1" stroke="var(--steel)" stroke-width="1.6"/><line x1="14" y1="33" x2="34" y2="33" stroke="var(--steel)" stroke-width="1.6"/><line x1="14" y1="37" x2="28" y2="37" stroke="var(--steel)" stroke-width="1.6"/></svg>`,
+  panele: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="10" width="34" height="22" rx="2" stroke="var(--wire-blue)" stroke-width="2"/><line x1="18" y1="38" x2="30" y2="38" stroke="var(--steel)" stroke-width="2"/><line x1="24" y1="32" x2="24" y2="38" stroke="var(--steel)" stroke-width="2"/><rect x="12" y="15" width="11" height="6" rx="1" stroke="var(--signal-green)" stroke-width="1.4"/><line x1="27" y1="16" x2="36" y2="16" stroke="var(--steel)" stroke-width="1.4"/><line x1="27" y1="20" x2="34" y2="20" stroke="var(--steel)" stroke-width="1.4"/><line x1="12" y1="25" x2="36" y2="25" stroke="var(--amber)" stroke-width="1.4"/></svg>`,
+  zawory: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="24" x2="18" y2="24" stroke="var(--steel)" stroke-width="2.4"/><line x1="30" y1="24" x2="44" y2="24" stroke="var(--steel)" stroke-width="2.4"/><path d="M18 16 L30 32 M30 16 L18 32" stroke="var(--wire-blue)" stroke-width="2"/><path d="M18 16 L18 32 L30 24 Z" fill="none" stroke="var(--wire-blue)" stroke-width="2"/><line x1="24" y1="16" x2="24" y2="8" stroke="var(--amber)" stroke-width="2.2"/><line x1="19" y1="8" x2="29" y2="8" stroke="var(--amber)" stroke-width="2.2"/></svg>`,
+  czujniki: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="26" r="14" stroke="var(--wire-blue)" stroke-width="2"/><line x1="24" y1="26" x2="31" y2="18" stroke="var(--amber)" stroke-width="2.2" stroke-linecap="round"/><circle cx="24" cy="26" r="2" fill="var(--amber)"/><line x1="24" y1="8" x2="24" y2="12" stroke="var(--steel)" stroke-width="2"/><line x1="10" y1="26" x2="6" y2="26" stroke="var(--steel)" stroke-width="2"/><line x1="38" y1="26" x2="42" y2="26" stroke="var(--steel)" stroke-width="2"/></svg>`,
+  "silowniki-przepustnic": `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="14" width="36" height="20" rx="1" stroke="var(--steel)" stroke-width="2"/><line x1="10" y1="18" x2="34" y2="26" stroke="var(--wire-blue)" stroke-width="2"/><line x1="10" y1="24" x2="34" y2="32" stroke="var(--wire-blue)" stroke-width="2" opacity="0.55"/><rect x="34" y="19" width="9" height="10" rx="1.5" stroke="var(--amber)" stroke-width="2"/><line x1="38.5" y1="10" x2="38.5" y2="19" stroke="var(--amber)" stroke-width="2"/></svg>`,
+  kvs: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="24" x2="44" y2="24" stroke="var(--steel)" stroke-width="2.4"/><path d="M18 15 L34 24 L18 33 Z" stroke="var(--wire-blue)" stroke-width="2" stroke-linejoin="round"/><line x1="18" y1="15" x2="18" y2="33" stroke="var(--amber)" stroke-width="2.4"/></svg>`,
+  falowniki: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="8" width="28" height="32" rx="2" stroke="var(--wire-blue)" stroke-width="2"/><path d="M14 26 L19 26 L22 18 L26 32 L29 26 L34 26" stroke="var(--amber)" stroke-width="1.8" stroke-linejoin="round" fill="none"/><line x1="16" y1="6" x2="16" y2="8" stroke="var(--steel)" stroke-width="1.6"/><line x1="24" y1="6" x2="24" y2="8" stroke="var(--steel)" stroke-width="1.6"/><line x1="32" y1="6" x2="32" y2="8" stroke="var(--steel)" stroke-width="1.6"/><line x1="16" y1="40" x2="16" y2="42" stroke="var(--steel)" stroke-width="1.6"/><line x1="24" y1="40" x2="24" y2="42" stroke="var(--steel)" stroke-width="1.6"/><line x1="32" y1="40" x2="32" y2="42" stroke="var(--steel)" stroke-width="1.6"/></svg>`
+};
+
+const productData = {
+  rozdzielnice: {
+    num: "01",
+    title: "Automatyka wentylacji",
+    desc: "Rozdzielnice i sterowniki produkowane kontraktowo dla central wentylacyjnych i klimatyzacyjnych — wraz ze wsparciem projektowym i doborem elementów pod konkretną instalację.",
+    items: [
+      { name: "PremiumBOX+", desc: "Rozdzielnica do central wentylacyjnych i klimatyzacyjnych z lub bez odzysku ciepła.", long: "Obsługuje regulację temperatury i wilgotności, sterowanie wentylatorami, nagrzewnicą, chłodnicą i układem odzysku ciepła. W standardzie webserwer z dostępem przez przeglądarkę i aplikację mobilną, co pozwala na podgląd i zmianę nastaw pracy centrali zdalnie, bez konieczności instalowania dodatkowego oprogramowania.", tag: "seria premium", photo: "assets/uploads/2023/09/rozdzienicepremium.jpg", price: "Wycena indywidualna" },
+      { name: "PowerBOX+ (garaże podziemne)", desc: "Kompletny system sterowania wentylacją mechaniczną garaży podziemnych.", long: "Zapewnia detekcję CO i LPG na trzech progach alarmowych, sterowanie wentylatorami strumieniowymi i bytowymi oraz obsługę przez panel dotykowy SC4G. Integruje się z nadrzędnym systemem BMS budynku przez Modbus RTU, co ułatwia wpięcie garażu w centralny system zarządzania obiektem.", tag: "garaż podziemny", photo: "assets/uploads/2023/09/power1.jpg", price: "Wycena indywidualna" },
+      { name: "SC-CTRL-R", desc: "Sterownik rekuperatora i małych central wentylacyjnych z nagrzewnicą, chłodnicą lub pompą ciepła.", long: "WiFi i webserwer są w standardzie wyposażenia, a dodatkowy port RS485 Modbus umożliwia komunikację z systemem BMS. Panel dotykowy SC4-R pozwala na dowolne przypisanie wejść i wyjść do potrzeb konkretnej instalacji, bez sztywnego schematu producenta.", tag: "rekuperacja", price: "Wycena indywidualna" },
+      { name: "SC-CTRL-Z", desc: "Sterownik strefowy do nagrzewnic i chłodnic wodnych.", long: "Wyposażony w panel dotykowy SC4-Z, moduł WiFi i komunikację Modbus RTU RS485. Osiem uniwersalnych wejść oraz programowalny harmonogram pracy pozwalają dopasować sterowanie do zmiennego zapotrzebowania w różnych strefach budynku.", tag: "nagrzewnice/chłodnice", price: "Wycena indywidualna" }
+    ]
+  },
+  panele: {
+    num: "02",
+    title: "Moduły i panele",
+    desc: "Interfejsy użytkownika central wentylacyjnych oraz moduły rozszerzające liczbę wejść i wyjść sterownika, oparte o rozwiązania EVCO.",
+    items: [
+      { name: "Panele użytkownika – centrale wentylacyjne", desc: "Panele operatorskie do podglądu i zmiany nastaw pracy centrali wentylacyjnej.", long: "Montowane bezpośrednio na obiekcie, umożliwiają obsłudze techniczej podgląd bieżących parametrów pracy centrali oraz szybką zmianę nastaw bez potrzeby logowania się do systemu nadrzędnego.", tag: "panel", photo: "assets/uploads/2023/09/panele.jpg", price: "W cenie kompletu z rozdzielnicą" },
+      { name: "Moduły rozszerzające I/O", desc: "Dodatkowe wejścia i wyjścia dla sterownika.", long: "Stosowane, gdy instalacja wymaga obsługi większej liczby czujników lub urządzeń wykonawczych niż przewiduje standardowa konfiguracja sterownika — pozwalają rozbudować system bez wymiany całej rozdzielnicy.", tag: "I/O", price: "od 300 PLN (SC-UI8AO4DO4)" }
+    ]
+  },
+  zawory: {
+    num: "03",
+    title: "Zawory regulacyjne i siłowniki",
+    desc: "Zawory produkcji NENUTEC i innych producentów HVAC do regulacji i odcięcia przepływu w instalacjach wentylacyjnych, grzewczych i chłodniczych.",
+    items: [
+      { name: "Siłowniki zaworów", desc: "Napędy NENUTEC do sterowania zaworami w układach HVAC.", long: "Stosowane w instalacjach wentylacji, klimatyzacji, ciepłownictwa i chłodnictwa do automatycznego pozycjonowania zaworów regulacyjnych w odpowiedzi na sygnał sterownika.", tag: "napęd NENUTEC", price: "od 420 PLN, zależnie od momentu i wersji", priceTable: [
+        { m: "NABA-M 2Nm (do DN15)", p: "420–515 PLN" },
+        { m: "NABA-M 5Nm (DN15–25)", p: "470–585 PLN" },
+        { m: "NABA-M 10Nm (DN32–50)", p: "614–765 PLN" },
+        { m: "NEBA-M 5Nm (fail-safe)", p: "620–775 PLN" },
+        { m: "NEBA-M 10Nm (fail-safe)", p: "815–1082 PLN" }
+      ] },
+      { name: "Zawory strefowe", desc: "Kluczowy element wodnych instalacji c.o. i klimatyzacji.", long: "Dostępne w wykonaniu 2-drogowym do prostego odcięcia przepływu lub 3-drogowym do przełączania między dwoma obiegami — pozwalają zarządzać ogrzewaniem lub chłodzeniem osobno w wydzielonych strefach budynku.", tag: "strefowy", price: "od 202 PLN, zależnie od DN i liczby dróg", priceTable: [
+        { m: "DB-VZ 2-15 (DN15, 2-drogowy)", p: "202 PLN" },
+        { m: "DB-VZ 2-20 (DN20, 2-drogowy)", p: "218 PLN" },
+        { m: "DB-VZ 2-25 (DN25, 2-drogowy)", p: "232 PLN" },
+        { m: "DB-VZ 3-15/20/25 (3-drogowy)", p: "206–237 PLN" },
+        { m: "Siłownik SM230/CA lub SM24/CA", p: "240 PLN" }
+      ] },
+      { name: "Zawory równoważące", desc: "Niezależne od ciśnienia zawory DN15–25.", long: "Łączą w jednej konstrukcji regulator różnicy ciśnień, ogranicznik przepływu i zawór regulacyjny o charakterystyce stałoprocentowej. Sprawdzają się zarówno w układach o stałej, jak i zmiennej objętości przepływu, upraszczając równoważenie hydrauliczne instalacji.", tag: "równoważenie", price: "Wycena na zapytanie" },
+      { name: "Zawory kulowe (przyłącze gwintowane)", desc: "Zawory odcinające z kulą obrotową.", long: "Dostępne w wersji z pełnym przepływem lub z redukcją przepływu w zależności od średnicy przewiertu kuli. Uszczelnienie z tworzywa odpornego do 220°C pozwala na pracę w instalacjach o podwyższonej temperaturze medium.", tag: "kulowy", price: "od 141 PLN, zależnie od DN i wersji", priceTable: [
+        { m: "NVCB DN15, 2-drogowy", p: "141 PLN" },
+        { m: "NVCB DN25, 2-drogowy", p: "200 PLN" },
+        { m: "NVCB DN40, 2-drogowy", p: "468 PLN" },
+        { m: "NVCB DN50, 2-drogowy", p: "663 PLN" },
+        { m: "NVCB DN15–50, 3-drogowy", p: "255–775 PLN" }
+      ] },
+      { name: "Zawory grzybkowe (gwintowane / kołnierzowe)", desc: "Zawory do precyzyjnej regulacji przepływu.", long: "Charakteryzują się dużą przepustowością, szerokim zakresem regulacji i cichą pracą, a konserwacja nie wymaga odłączania zaworu od instalacji. Wadą jest wyższy spadek ciśnienia w porównaniu do zaworów kulowych, dlatego sprawdzają się głównie tam, gdzie liczy się dokładność regulacji, a nie minimalizacja strat.", tag: "grzybkowy", price: "od 285 PLN, zależnie od serii i DN", priceTable: [
+        { m: "VFZ (gwint. wew., DN15–40)", p: "285–652 PLN" },
+        { m: "VFG 2-/3-drogowy (DN15–50)", p: "754–1886 PLN" },
+        { m: "VFD (DN15–50, do 150°C)", p: "877–2582 PLN" },
+        { m: "VF kołnierzowy (DN65–200)", p: "2477–12 300 PLN" },
+        { m: "2F/3F kołnierzowy (DN15–150)", p: "1750–5930 PLN" }
+      ] },
+      { name: "Zawory motylkowe i kulowe odcinające (kołnierz)", desc: "Zawory do pełnego odcięcia instalacji.", long: "Stosowane głównie jako zawory odcinające, pozwalające zablokować fragment instalacji technologicznej na czas awarii lub planowych prac serwisowych, bez wpływu na pozostałą część systemu.", tag: "odcinający", price: "od 930 PLN, zależnie od DN", priceTable: [
+        { m: "NBFV 8000, DN40", p: "1033 PLN" },
+        { m: "NBFV 8000, DN100", p: "1249 PLN" },
+        { m: "NBFV 8000, DN150", p: "1779 PLN" },
+        { m: "VF 8000, DN32–80", p: "930–990 PLN" }
+      ] },
+      { name: "Zawory do pary", desc: "Zawory do instalacji parowych.", long: "Korpus wykonany zwykle ze stali nierdzewnej lub węglowej, a uszczelnienie z teflonu wzmocnionego węglografitem zapewnia wyższą odporność termiczną. Odporność na ciśnienie jest niższa niż w zaworach do cieczy — najczęściej do około 10 bar, co trzeba uwzględnić przy doborze do konkretnej instalacji.", tag: "para", price: "Wycena na zapytanie" }
+    ]
+  },
+  czujniki: {
+    num: "04",
+    title: "Elementy pomiarowe automatyki",
+    desc: "Czujniki i regulatory NENUTEC dostarczające dane wejściowe dla całej automatyki HVAC — temperatura, wilgotność, ciśnienie i jakość powietrza.",
+    items: [
+      { name: "Termostaty i czujniki temperatury", desc: "Pomiar i regulacja temperatury.", long: "Montowane w kanałach wentylacyjnych, pomieszczeniach lub bezpośrednio w instalacjach wodnych, dostarczają sterownikowi bieżący odczyt temperatury potrzebny do regulacji pracy nagrzewnic, chłodnic i wentylatorów.", tag: "temperatura", price: "od 55 PLN, zależnie od typu", priceTable: [
+        { m: "Czujnik kanałowy (wersja ekonomiczna)", p: "55 PLN" },
+        { m: "Czujnik kanałowy / przylgowy / pomieszczeniowy / zewnętrzny", p: "60 PLN" },
+        { m: "Przetwornik SC-DHTS", p: "250–285 PLN" }
+      ] },
+      { name: "Termostaty klimakonwektorów i fancoili", desc: "Sterowanie pracą klimakonwektorów.", long: "Dedykowane jednostkom fancoil — regulują ich pracę w funkcji zadanej temperatury pomieszczenia, niezależnie od centralnego sterowania wentylacją.", tag: "fancoil", price: "300 PLN (SC607EC / SC607AC)" },
+      { name: "Higrostaty i czujniki wilgotności", desc: "Regulacja wilgotności względnej.", long: "Kontrolują poziom wilgotności w instalacjach wentylacyjnych i klimatyzacyjnych, umożliwiając automatyczną reakcję systemu na przekroczenie zadanych progów wilgotności.", tag: "wilgotność", price: "od 384 PLN, zależnie od typu", priceTable: [
+        { m: "DBZH101 (pomieszczeniowy)", p: "384 PLN" },
+        { m: "DBKH-10 (kanałowy)", p: "900 PLN" }
+      ] },
+      { name: "Presostaty i czujniki ciśnienia", desc: "Pomiar i sygnalizacja ciśnienia.", long: "Wykorzystywane m.in. do kontroli zabrudzenia filtrów powietrza oraz do nadzorowania pracy wentylatorów — wzrost różnicy ciśnień ponad ustaloną wartość sygnalizuje potrzebę serwisu.", tag: "ciśnienie", price: "od 123 PLN, zależnie od zakresu", priceTable: [
+        { m: "DBL (presostat różnicowy)", p: "123 PLN" },
+        { m: "NPRCN 25", p: "462 PLN" },
+        { m: "NPRC 12 / 25", p: "649 PLN" },
+        { m: "NPRC12S25 (podwójny)", p: "1050 PLN" }
+      ] },
+      { name: "Czujniki CO2 i jakości powietrza", desc: "Sterowanie wentylacją w funkcji jakości powietrza.", long: "Pozwalają na regulację strumienia powietrza w oparciu o rzeczywiste stężenie CO2 (DCV — Demand Controlled Ventilation) zamiast pracy ze stałym, maksymalnym przepływem, co obniża zużycie energii.", tag: "jakość powietrza", price: "od 690 PLN, zależnie od typu", priceTable: [
+        { m: "CO2-SENS-R (pomieszczeniowy)", p: "690 PLN" },
+        { m: "CO2-SENS-D (kanałowy)", p: "765 PLN" },
+        { m: "DB-RLQ (jakość powietrza, pomieszczeniowy)", p: "1520 PLN" },
+        { m: "DB-KLQ (jakość powietrza, kanałowy)", p: "1820 PLN" }
+      ] },
+      { name: "Czujniki przepływu/poziomu mediów i powietrza", desc: "Monitoring przepływu i poziomu.", long: "Stosowane w instalacjach technologicznych do nadzorowania przepływu cieczy oraz powietrza, a także poziomu mediów w zbiornikach i układach obiegowych.", tag: "przepływ", price: "od 364 PLN, zależnie od typu", priceTable: [
+        { m: "SF (przepływ cieczy)", p: "364–904 PLN" },
+        { m: "SL1E (przepływ powietrza)", p: "385 PLN" },
+        { m: "SQ (poziom cieczy)", p: "535 PLN" }
+      ] },
+      { name: "Regulatory klimakonwektorów", desc: "Zarządzanie pracą klimakonwektorów.", long: "Dedykowane budynkom komercyjnym i mieszkalnym, koordynują pracę wielu jednostek klimakonwektorowych w zależności od zadanych parametrów komfortu.", tag: "regulator", price: "300 PLN (SC607)" },
+      { name: "Akcesoria", desc: "Elementy uzupełniające montaż.", long: "Obejmują osprzęt potrzebny do prawidłowego montażu i konfiguracji czujników oraz regulatorów — od obudów po elementy mocujące i przyłączeniowe.", tag: "akcesoria", price: "319 PLN (zadajnik NPG-24), 300 PLN (moduł I/O SC-UI8AO4DO4)" }
+    ]
+  },
+  "silowniki-przepustnic": {
+    num: "05",
+    title: "Siłowniki przepustnic",
+    desc: "Siłowniki NENUTEC do obsługi i pozycjonowania przepustnic powietrza o różnych rozmiarach, w wykonaniach standardowych i o podwyższonym bezpieczeństwie.",
+    items: [
+      { name: "Standardowe", desc: "Siłowniki NENUTEC (NEAA/NACA, NEAM/NACM).", long: "Zaprojektowane do obsługi i pozycjonowania przepustnic powietrza w systemach HVAC o różnych rozmiarach — podstawowy wybór tam, gdzie nie jest wymagana dodatkowa funkcja bezpieczeństwa.", tag: "standard", price: "od 510 PLN, zależnie od momentu obrotowego", priceTable: [
+        { m: "NACA 2Nm (do 0,4 m²)", p: "510–670 PLN" },
+        { m: "NACA 10Nm (do 2 m²)", p: "698–935 PLN" },
+        { m: "NACA 20Nm (do 4 m²)", p: "777–1105 PLN" },
+        { m: "NACA 40Nm (do 7 m²)", p: "1175–1415 PLN" }
+      ] },
+      { name: "Szybkie", desc: "Siłowniki o krótkim czasie ruchu.", long: "Przeznaczone do systemów grzewczych, wentylacyjnych i klimatyzacyjnych, w których liczy się szybka reakcja przepustnicy na zmianę sygnału sterującego. Dostępne w szerokim zakresie obsługiwanych powierzchni przepustnic.", tag: "szybki", price: "Wycena na zapytanie" },
+      { name: "Ze sprężyną zwrotną", desc: "Obsługa przepustnic z funkcją bezpieczeństwa.", long: "W razie zaniku sygnału sterującego lub zasilania siłownik automatycznie ustawia przepustnicę w bezpiecznej pozycji awaryjnej dzięki mechanicznej sprężynie powrotnej.", tag: "sprężyna zwrotna", price: "od 775 PLN, zależnie od momentu obrotowego", priceTable: [
+        { m: "NAFA 3Nm (do 0,5 m²)", p: "775–1025 PLN" },
+        { m: "NAFA 5Nm (do 1 m²)", p: "879–1170 PLN" },
+        { m: "NAFA 8/10Nm (do 1,5 m²)", p: "930–1285 PLN" },
+        { m: "NAFA 20/15Nm (do 4 m²)", p: "1255–1505 PLN" }
+      ] },
+      { name: "Z funkcją bezpieczeństwa (Fail-Safe EFS)", desc: "Elektroniczna sprężyna Fail-Safe.", long: "Oferuje różne czasy pracy i pozycje awaryjne, wysoką dokładność pozycjonowania oraz krótki czas ładowania kondensatora. Stanowi nowocześniejszy następca klasycznych siłowników ze sprężyną mechaniczną.", tag: "fail-safe", price: "od 760 PLN, zależnie od momentu obrotowego", priceTable: [
+        { m: "NECA 2Nm (do 0,4 m²)", p: "760–990 PLN" },
+        { m: "NECA 6/10Nm (do 1,5 m²)", p: "860–1070 PLN" },
+        { m: "NECA 20Nm (do 4 m²)", p: "1110–1240 PLN" },
+        { m: "MECA (Modbus RTU)", p: "1225–1625 PLN" }
+      ] },
+      { name: "Inteligentne siłowniki VAV", desc: "Seria NSVA do sterowania zmiennym przepływem powietrza.", long: "Niezależne od ciśnienia sterowanie VAV (Variable Air Volume) z wbudowanym regulatorem DDC — stosowane w instalacjach HVAC, aparatach VAV oraz w laboratoriach, gdzie wymagana jest precyzyjna kontrola przepływu powietrza.", tag: "VAV", price: "od 860 PLN + zadajnik", priceTable: [
+        { m: "NSVA0000B (24V, BACnet)", p: "860 PLN" },
+        { m: "NSVA0222B (2×AI/2×DO/2×AO)", p: "1320 PLN" },
+        { m: "Zadajnik NEVD / NEVD-IAQ", p: "275–1190 PLN" },
+        { m: "Zadajnik NEVR / NEVR-IAQ", p: "200–1015 PLN" }
+      ] },
+      { name: "Siłowniki do przepustnic Modbus RTU", desc: "Wersje z komunikacją cyfrową.", long: "Wyposażone w interfejs Modbus RTU, co pozwala na integrację z nadrzędnym systemem sterowania i zdalny odczyt parametrów pracy siłownika.", tag: "Modbus RTU", price: "od 955 PLN, zależnie od momentu obrotowego", priceTable: [
+        { m: "MACA 5Nm", p: "955–1005 PLN" },
+        { m: "MACA 10Nm", p: "1125–1175 PLN" },
+        { m: "MACA 20Nm", p: "1375–1425 PLN" }
+      ] }
+    ]
+  },
+  kvs: {
+    num: "06",
+    title: "Zawory KVS Valve",
+    desc: "Zawory marki KVS Valve do branży wentylacji mechanicznej, instalacji wodno-kanalizacyjnych i przeciwpożarowych, w atrakcyjnych cenach.",
+    items: [
+      { name: "Zawory zwrotne", desc: "Zawór samoczynny jednokierunkowy.", long: "Zapewnia przepływ płynu tylko w jednym kierunku — przechodzi ze stanu zamknięcia do otwarcia w zależności od znaku różnicy ciśnień po obu jego stronach, chroniąc instalację przed cofnięciem medium.", tag: "zwrotny", price: "Wycena na zapytanie (odrębny cennik KVS Valve)" }
+    ]
+  },
+  falowniki: {
+    num: "07",
+    title: "Falowniki",
+    desc: "Przemienniki częstotliwości EURA E-810 (seria HF INVERTER) — kompaktowa konstrukcja, szeroki zakres mocy i gotowość do pracy zaraz po podłączeniu.",
+    items: [
+      { name: "Falowniki jednofazowe", desc: "Seria EURA E-810, napięcie przyłączeniowe 1× 220–240 VAC ±15%.", long: "Przeznaczone do regulacji obrotów mniejszych wentylatorów i pomp — pozwalają płynnie dopasować wydajność napędu do bieżącego zapotrzebowania instalacji, ograniczając zużycie energii w porównaniu do pracy ze stałą prędkością.", tag: "1-fazowy", price: "Wycena indywidualna" },
+      { name: "Falowniki trójfazowe", desc: "Seria EURA E-810 w wykonaniu trójfazowym.", long: "Stosowane do napędów o większej mocy w instalacjach wentylacyjnych, gdzie regulacja obrotów silnika trójfazowego pozwala na precyzyjne sterowanie pracą wentylatorów i pomp obiegowych.", tag: "3-fazowy", price: "Wycena indywidualna" }
+    ]
+  }
+};
+
+const overlay = document.getElementById('modalOverlay');
+const modalEyebrow = document.getElementById('modalEyebrow');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const modalList = document.getElementById('modalList');
+let lastFocused = null;
+let currentCategory = null;
+
+function renderCategoryList(key){
+  const data = productData[key];
+  modalEyebrow.textContent = `Kategoria ${data.num}`;
+  modalTitle.textContent = data.title;
+  modalDesc.textContent = data.desc;
+  modalDesc.style.display = '';
+  const icon = categoryIcons[key] || '';
+  modalList.innerHTML = data.items.map((item, idx) => {
+    const thumb = item.photo
+      ? `<img src="${item.photo}" alt="${item.name}" loading="lazy" onerror="this.parentElement.innerHTML='${icon.replace(/'/g, "\\'")}'">`
+      : icon;
+    return `
+    <button class="product-item" data-idx="${idx}">
+      <div class="product-thumb">${thumb}</div>
+      <div class="product-item-body">
+        <div class="p-name">${item.name}</div>
+        <div class="p-desc">${item.desc}</div>
+        ${item.price ? `<div class="p-price">${item.price}</div>` : ''}
+      </div>
+      <div class="p-tag">${item.tag}</div>
+      <div class="p-arrow">→</div>
+    </button>
+  `;
+  }).join('');
+  modalList.querySelectorAll('.product-item').forEach(btn => {
+    btn.addEventListener('click', () => renderProductDetail(key, parseInt(btn.dataset.idx, 10)));
+  });
+}
+
+function renderProductDetail(key, idx){
+  const data = productData[key];
+  const item = data.items[idx];
+  const icon = categoryIcons[key] || '';
+  const thumb = item.photo
+    ? `<img src="${item.photo}" alt="${item.name}" onerror="this.parentElement.innerHTML='${icon.replace(/'/g, "\\'")}'">`
+    : icon;
+  modalDesc.style.display = 'none';
+  modalList.innerHTML = `
+    <button class="detail-back" id="detailBack">← Wróć do listy: ${data.title}</button>
+    <div class="detail-header">
+      <div class="detail-thumb">${thumb}</div>
+      <div>
+        <h4>${item.name}</h4>
+        <span class="detail-tag">${item.tag}</span>
+      </div>
+    </div>
+    <div class="detail-body">
+      <p class="detail-lead">${item.desc}</p>
+      <p>${item.long || ''}</p>
+      ${item.price ? `<div class="detail-price"><span>Cena</span><b>${item.price}</b></div>` : ''}
+      ${item.priceTable ? `
+        <div class="price-table">
+          <div class="price-table-head"><span>Model</span><span>Specyfikacja</span><span>Cena</span></div>
+          ${item.priceTable.map(row => {
+            const match = row.m.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+            const model = match ? match[1] : row.m;
+            const spec = match ? match[2] : '—';
+            return `<div class="price-table-row"><span>${model}</span><span class="spec-col">${spec}</span><span>${row.p}</span></div>`;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+    <div class="detail-note">${item.photo ? 'Zdjęcie produktu ze strony smartcontrols.pl.' : 'Ilustracja poglądowa — schemat przykładowy, nie zdjęcie rzeczywistego produktu.'} Ceny na podstawie cennika Smart Controls (PDF, do pobrania w zakładce „Do pobrania").</div>
+  `;
+  document.getElementById('detailBack').addEventListener('click', () => renderCategoryList(key));
+}
+
+
+function openModal(key){
+  const data = productData[key];
+  if(!data) return;
+  currentCategory = key;
+  renderCategoryList(key);
+  lastFocused = document.activeElement;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('modalClose').focus();
+}
+
+function closeModal(){
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  if(lastFocused) lastFocused.focus();
+}
+
+document.querySelectorAll('.service-card').forEach(card => {
+  card.addEventListener('click', () => openModal(card.dataset.category));
+  card.addEventListener('keydown', e => {
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      openModal(card.dataset.category);
+    }
+  });
+});
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if(e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && overlay.classList.contains('open')) closeModal(); });
+
+/* ---------- tab navigation ---------- */
+function goToPage(pageKey){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + pageKey);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === pageKey));
+  document.querySelectorAll('.mobile-nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === pageKey));
+  const logoEl = document.querySelector('.logo[data-page]');
+  if(logoEl) logoEl.classList.toggle('on-start', pageKey === 'start');
+  closeMobileNav();
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+document.querySelectorAll('[data-page]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    goToPage(el.dataset.page);
+  });
+  if(el.getAttribute('role') === 'button'){
+    el.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        goToPage(el.dataset.page);
+      }
+    });
+  }
+});
+
+/* ---------- mobile nav ---------- */
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+const headerEl = document.querySelector('header');
+function syncMobileNavOffset(){
+  if(headerEl && mobileNavOverlay) mobileNavOverlay.style.top = headerEl.offsetHeight + 'px';
+}
+syncMobileNavOffset();
+window.addEventListener('resize', syncMobileNavOffset);
+function openMobileNav(){
+  hamburgerBtn.classList.add('open');
+  hamburgerBtn.setAttribute('aria-expanded', 'true');
+  mobileNavOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileNav(){
+  if(!hamburgerBtn) return;
+  hamburgerBtn.classList.remove('open');
+  hamburgerBtn.setAttribute('aria-expanded', 'false');
+  mobileNavOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+if(hamburgerBtn){
+  hamburgerBtn.addEventListener('click', () => {
+    if(hamburgerBtn.classList.contains('open')) closeMobileNav();
+    else openMobileNav();
+  });
+}
+
+/* ---------- pełny cennik (na podstawie Katalogu układów i elementów automatyki, wersja 1/2025) ---------- */
+const pdfCennikRows = [
+  // STEROWNICE
+  { category: "Sterownice", model: "PremiumBOX+", spec: "sterownica central went./klim., webserwer w standardzie", price: "Wycena indywidualna" },
+  { category: "Sterownice", model: "PowerBOX+", spec: "wentylacja bytowa garaży podziemnych, panel SC4G", price: "Wycena indywidualna" },
+
+  // SIŁOWNIKI PRZEPUSTNIC — NACA-M standardowe
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-02 / NACA2-02", spec: "2Nm, do 0,4 m², Zamknij/Otwórz 24V / 230V", price: "510–530 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-02S / NACA2-02S", spec: "2Nm, Zamknij/Otwórz + styk pomocniczy", price: "520–555 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACM1.1-02", spec: "2Nm, 0(2)-10V, 24V AC/DC", price: "670 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-05 / NACA2-05", spec: "5Nm, do 1 m², Zamknij/Otwórz 24V / 230V", price: "565 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-05S / NACA2-05S", spec: "5Nm, Zamknij/Otwórz + styk pomocniczy", price: "610–625 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACM1.1-05", spec: "5Nm, 0(2)-10V, 24V AC/DC", price: "745 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-10 / NACA2-10", spec: "10Nm, do 2 m², Zamknij/Otwórz", price: "698–715 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-10S / NACA2-10S", spec: "10Nm, Zamknij/Otwórz + styk pomocniczy", price: "735–780 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACM1.1-10 / NACM1.1-10S / NACM2.2-10", spec: "10Nm, analogowe 0(2)-10V, 24V / 230V", price: "885–935 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-20 / NACA2-20", spec: "20Nm, do 4 m², Zamknij/Otwórz", price: "777–790 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-20S / NACA2-20S", spec: "20Nm, Zamknij/Otwórz + styk pomocniczy", price: "880–900 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACM1.1-20 / NACM1.1-20S / NACM2.2-20", spec: "20Nm, analogowe, 24V / 230V", price: "1065–1105 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-40 / NACA2-40", spec: "40Nm, do 7 m², Zamknij/Otwórz", price: "1175–1205 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACA1-40S / NACA2-40S", spec: "40Nm, Zamknij/Otwórz + styk pomocniczy", price: "1195–1225 PLN" },
+  { category: "Siłowniki przepustnic — standardowe (NACA-M)", model: "NACM1.1-40 / NACM1.1-40S / NACM2.2-40", spec: "40Nm, analogowe, 24V / 230V", price: "1365–1415 PLN" },
+
+  // Modbus RTU MACA
+  { category: "Siłowniki przepustnic — Modbus RTU (MACA)", model: "MACA1-05 / MECA1-05S", spec: "5Nm, Modbus RTU / 0(2)-10V, 24V AC/DC, czas ruchu 60–90s", price: "955–1005 PLN" },
+  { category: "Siłowniki przepustnic — Modbus RTU (MACA)", model: "MACA1-10 / MACA1-10S1", spec: "10Nm, Modbus RTU, czas ruchu 70–100s", price: "1125–1175 PLN" },
+  { category: "Siłowniki przepustnic — Modbus RTU (MACA)", model: "MACA1-20 / MACA1-20S", spec: "20Nm, Modbus RTU, czas ruchu 100–150s", price: "1375–1425 PLN" },
+
+  // NECA-M fail-safe
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-02 / NECA2-02", spec: "2Nm, elektroniczna funkcja bezpieczeństwa, 24V / 230V", price: "760–815 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-02S / NECA2-02S", spec: "2Nm, EFS + styk pomocniczy", price: "810–870 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECM1.1-02 / NECM1.1-02S", spec: "2Nm, EFS, 0(2)-10V, 24V AC/DC", price: "990–1090 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-05 / NECA2-05", spec: "5Nm, EFS, 24V / 230V", price: "835–880 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-05S / NECA2-05S", spec: "5Nm, EFS + styk pomocniczy", price: "860–890 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECM1.1-5 / NECM1.1-05S", spec: "5Nm, EFS, 0(2)-10V, 24V AC/DC", price: "wg cennika (poz. tabelaryczna)" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-06 / NECA2-06", spec: "6Nm, EFS, 24V / 230V", price: "860–890 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-06S / NECA2-06S", spec: "6Nm, EFS + styk pomocniczy", price: "895–910 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECM1.1-06 / NECM1.1-06S", spec: "6Nm, EFS, 0(2)-10V, 24V AC/DC", price: "1020–1050 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-10 / NECA2-10", spec: "10Nm, EFS, 24V / 230V", price: "895–940 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-10S / NECA2-10S", spec: "10Nm, EFS + styk pomocniczy", price: "915–960 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECM1.1-10 / NECM1.1-10S", spec: "10Nm, EFS, 0(2)-10V, 24V AC/DC", price: "1040–1070 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-20 / NECA2-20", spec: "20Nm, EFS, 24V / 230V", price: "1110–1180 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECA1-20S / NECA2-20S", spec: "20Nm, EFS + styk pomocniczy", price: "1140–1200 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe (NECA-M, EFS)", model: "NECM1.1-20 / NECM1.1-20S", spec: "20Nm, EFS, 0(2)-10V, 24V AC/DC", price: "1220–1240 PLN" },
+
+  // MECA modbus fail-safe
+  { category: "Siłowniki przepustnic — fail-safe Modbus RTU (MECA)", model: "MECA1-05 / MECA1-05S", spec: "5Nm, Electronic Return, Modbus RTU / 0(2)-10V", price: "1225–1275 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe Modbus RTU (MECA)", model: "MECA1-10 / MECA1-10S1", spec: "10Nm, Electronic Return, Modbus RTU", price: "1375–1425 PLN" },
+  { category: "Siłowniki przepustnic — fail-safe Modbus RTU (MECA)", model: "MECA1-20 / MECA1-20S", spec: "20Nm, Electronic Return, Modbus RTU", price: "1575–1625 PLN" },
+
+  // NAFA-M sprężyna
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-03 / NAFA2-03", spec: "3Nm, do 0,5 m², Zamknij/Otwórz", price: "775–830 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-03S / NAFA2-03S", spec: "3Nm, Zamknij/Otwórz + styk pomocniczy", price: "825–885 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NESM24.2-03 / NESM24.2-03S", spec: "3Nm, analogowe, 24V AC/DC", price: "1005–1025 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-05 / NAFA2-05", spec: "5Nm, do 1 m², Zamknij/Otwórz", price: "879–925 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-05S / NAFA2-05S", spec: "5Nm, Zamknij/Otwórz + styk pomocniczy", price: "965–1025 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NESM24.2-05 / NESM24.2-05S", spec: "5Nm, analogowe, 24V AC/DC", price: "1160–1170 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-08 / NAFA2-08", spec: "8/10Nm, do 1,5 m², Zamknij/Otwórz", price: "930–1055 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-08S / NAFA2-08S", spec: "8/10Nm, Zamknij/Otwórz + styk pomocniczy", price: "1030–1155 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NESM24.2-10 / NESM24.2-10S", spec: "8/10Nm, analogowe, 24V AC/DC", price: "1265–1285 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-20 / NAFA2-20", spec: "20/15Nm, do 4 m², Zamknij/Otwórz", price: "1255–1435 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NAFA1-20S / NAFA2-20S", spec: "20/15Nm, Zamknij/Otwórz + styk pomocniczy", price: "1335–1485 PLN" },
+  { category: "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)", model: "NESM24.2-15 / NESM24.2-15S", spec: "20/15Nm, analogowe, 24V AC/DC", price: "1465–1505 PLN" },
+
+  // Regulatory VAV NSVA (spec = I/O breakdown)
+  { category: "Regulatory VAV (NSVA)", model: "NSVA0000B", spec: "5Nm, 24VAC, komunikacja Bacnet, bez dodatkowych I/O", price: "860 PLN" },
+  { category: "Regulatory VAV (NSVA)", model: "NSVA0000BL", spec: "5Nm, 100–277VAC, komunikacja Bacnet, bez dodatkowych I/O", price: "1080 PLN" },
+  { category: "Regulatory VAV (NSVA)", model: "NSVA0200B", spec: "5Nm, 24VAC, Bacnet, 2 wejścia AI", price: "959 PLN" },
+  { category: "Regulatory VAV (NSVA)", model: "NSVA0200BL", spec: "5Nm, 100–277VAC, Bacnet, 2 wejścia AI", price: "1110 PLN" },
+  { category: "Regulatory VAV (NSVA)", model: "NSVA0222B", spec: "5Nm, 24VAC, Bacnet, 2 wejścia AI / 2 wyjścia DO / 2 wyjścia AO", price: "1320 PLN" },
+
+  // Zadajniki NEVD / NEVR
+  { category: "Zadajniki do regulatorów VAV (NEVD / NEVR)", model: "NEVD", spec: "wyświetlacz LCD, czujnik temperatury, Modbus RTU", price: "275 PLN" },
+  { category: "Zadajniki do regulatorów VAV (NEVD / NEVR)", model: "NEVD-H", spec: "LCD, temperatura + wilgotność, Modbus RTU", price: "360 PLN" },
+  { category: "Zadajniki do regulatorów VAV (NEVD / NEVR)", model: "NEVD-IAQ", spec: "LCD, temperatura + wilgotność + CO2, Modbus RTU", price: "1190 PLN" },
+  { category: "Zadajniki do regulatorów VAV (NEVD / NEVR)", model: "NEVR", spec: "bez LCD, czujnik temperatury, Modbus RTU", price: "200 PLN" },
+  { category: "Zadajniki do regulatorów VAV (NEVD / NEVR)", model: "NEVR-H", spec: "temperatura + wilgotność, Modbus RTU", price: "300 PLN" },
+  { category: "Zadajniki do regulatorów VAV (NEVD / NEVR)", model: "NEVR-IAQ", spec: "temperatura + wilgotność + CO2, Modbus RTU", price: "1015 PLN" },
+
+  // Siłowniki NABA-M / NEBA-M do zaworów kulowych
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABA1-02 / NABA2-02", spec: "2Nm, do zaworów DN15, Zamknij/Otwórz", price: "420–455 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABA1-02S / NABA2-02S", spec: "2Nm, Zamknij/Otwórz + styk pomocniczy", price: "425–470 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABM1.2-02", spec: "2Nm, analogowy 24V AC/DC", price: "515 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABA1-05 / NABA2-05", spec: "5Nm, DN15–25, Zamknij/Otwórz", price: "470 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABA1-05S / NABA2-05S", spec: "5Nm, Zamknij/Otwórz + styk pomocniczy", price: "518–521 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABM1.2-05", spec: "5Nm, analogowy 0(2)-10V, 24V AC/DC", price: "585 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABA1-10 / NABA2-10", spec: "10Nm, DN32–50, Zamknij/Otwórz", price: "614–650 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABA1-10S / NABA2-10S", spec: "10Nm, Zamknij/Otwórz + styk pomocniczy", price: "648–682 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NABM1.2-10 / NABM1.2-10S", spec: "10Nm, analogowy, 24V AC/DC", price: "729–765 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NEBA1-05 / NEBA2-05", spec: "5Nm, fail-safe, DN15–25", price: "620 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NEBA1-05S1 / NEBA2-05S1", spec: "5Nm, fail-safe + styk pomocniczy", price: "682–690 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NEBM1.2-05", spec: "5Nm, fail-safe, analogowy 24V AC/DC", price: "775 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NEBA1-10 / NEBA2-10", spec: "10Nm, fail-safe, DN32–50", price: "815–860 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NEBA1-10S1 / NEBA2-10S1", spec: "10Nm, fail-safe + styk pomocniczy", price: "860–902 PLN" },
+  { category: "Siłowniki zaworów kulowych (NABA-M / NEBA-M)", model: "NEBM1.1-10 / NEBM1.2-10S1", spec: "10Nm, fail-safe, analogowy 24V AC/DC", price: "970–1082 PLN" },
+
+  // Zawory kulowe NVCB
+  { category: "Zawory kulowe NVCB 7200 (2-drogowe)", model: "NVCB 720xx-B.. DN15", spec: "G 1/2, kvs 1,0–6,3 m³/h, siłownik NAB-02", price: "141 PLN" },
+  { category: "Zawory kulowe NVCB 7200 (2-drogowe)", model: "NVCB 720xx-B.. DN20", spec: "G 3/4, kvs 4–10 m³/h, siłownik NAB-05", price: "158 PLN" },
+  { category: "Zawory kulowe NVCB 7200 (2-drogowe)", model: "NVCB 720xx-B.. DN25", spec: "G 1, kvs 6,3–16 m³/h, siłownik NAB-05", price: "200 PLN" },
+  { category: "Zawory kulowe NVCB 7200 (2-drogowe)", model: "NVCB 720xx-B.. DN32", spec: "G 1 1/4, kvs 10–25 m³/h, siłownik NAB-10", price: "290 PLN" },
+  { category: "Zawory kulowe NVCB 7200 (2-drogowe)", model: "NVCB 720xx-B.. DN40", spec: "G 1 1/2, kvs 16–40 m³/h, siłownik NAB-10", price: "468 PLN" },
+  { category: "Zawory kulowe NVCB 7200 (2-drogowe)", model: "NVCB 720xx-B.. DN50", spec: "G 2, kvs 25–63 m³/h, siłownik NAB-10", price: "663 PLN" },
+  { category: "Zawory kulowe NVCB 7300 (3-drogowe)", model: "NVCB 730xx-B.. DN15", spec: "G 1/2, kvs 1,0–6,3 m³/h, siłownik NAB-02", price: "255 PLN" },
+  { category: "Zawory kulowe NVCB 7300 (3-drogowe)", model: "NVCB 730xx-B.. DN20", spec: "G 3/4, kvs 4–10 m³/h, siłownik NAB-05", price: "292 PLN" },
+  { category: "Zawory kulowe NVCB 7300 (3-drogowe)", model: "NVCB 730xx-B.. DN25", spec: "G 1, kvs 6,3–16 m³/h, siłownik NAB-05", price: "361 PLN" },
+  { category: "Zawory kulowe NVCB 7300 (3-drogowe)", model: "NVCB 730xx-B.. DN32", spec: "G 1 1/4, kvs 10–25 m³/h, siłownik NAB-10", price: "435 PLN" },
+  { category: "Zawory kulowe NVCB 7300 (3-drogowe)", model: "NVCB 730xx-B.. DN40", spec: "G 1 1/2, kvs 16–40 m³/h, siłownik NAB-10", price: "622 PLN" },
+  { category: "Zawory kulowe NVCB 7300 (3-drogowe)", model: "NVCB 730xx-B.. DN50", spec: "G 2, kvs 25–63 m³/h, siłownik NAB-10", price: "775 PLN" },
+
+  // Siłownik SE4 + VFZ
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "SE4M24", spec: "400N, skok 5,5mm, 24V, sterowanie 0(2)-10V", price: "610 PLN" },
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "SE4F24 / SE4F230", spec: "400N, sterowanie 2-/3-punktowe, 24V / 230V", price: "595–605 PLN" },
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "VFZ310–VFZ316", spec: "3-drogowy, G 1/2, kvs 0,25–4 m³/h", price: "285 PLN" },
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "VFZ318 / VFZ320", spec: "3-drogowy, G 3/4, kvs 4–6,3 m³/h", price: "322 PLN" },
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "VFZ325", spec: "3-drogowy, G 1, kvs 10 m³/h", price: "391 PLN" },
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "VFZ332", spec: "3-drogowy, G 1 1/4, kvs 16 m³/h", price: "465 PLN" },
+  { category: "Siłownik SE4 i zawory grzybkowe VFZ", model: "VFZ340", spec: "3-drogowy, G 1 1/2, kvs 25 m³/h", price: "652 PLN" },
+
+  // SE5 / SE10 / SE18 / SE25
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE5M24", spec: "500N, skok 10–30mm, 24V, analogowy 0(2)-10V/4-20mA", price: "1866 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE5F24 / SE5F230", spec: "500N, sterowanie 3-punktowe, 24V / 230V", price: "1401–1680 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE10M24", spec: "1000N, analogowy, 24V", price: "2303 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE10F24 / SE10F230", spec: "1000N, 3-punktowe, 24V / 230V", price: "1866–2043 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE18M24", spec: "1800N, skok 10–52mm, analogowy, 24V", price: "3743 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE18F24 / SE18F230", spec: "1800N, 3-punktowe, 24V / 230V", price: "3263–3488 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE25M24", spec: "2500N, skok 10–52mm, analogowy, 24V", price: "4624 PLN" },
+  { category: "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)", model: "SE25F24 / SE25F230", spec: "2500N, 3-punktowe, 24V / 230V", price: "4169–4162 PLN" },
+
+  // VFG / VFD
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG215.. (2-drog.)", spec: "DN15, kvs 0,6–2,5 m³/h", price: "754 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG220-3,9 (2-drog.)", spec: "DN20, kvs 3,9 m³/h", price: "798 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG225.. (2-drog.)", spec: "DN25, kvs 6,3–10 m³/h", price: "935 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG232.. (2-drog.)", spec: "DN32, kvs 10–16 m³/h", price: "1038 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG240.. (2-drog.)", spec: "DN40, kvs 16–27 m³/h", price: "1337 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG250-39 (2-drog.)", spec: "DN50, kvs 39 m³/h", price: "1719 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG315.. (3-drog.)", spec: "DN15, kvs 0,63–2,7 m³/h", price: "803 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG320.. (3-drog.)", spec: "DN20, kvs 4,2–5,6 m³/h", price: "837 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG325-10 (3-drog.)", spec: "DN25, kvs 10 m³/h", price: "1014 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG332-16 (3-drog.)", spec: "DN32, kvs 16 m³/h", price: "1122 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG340-27 (3-drog.)", spec: "DN40, kvs 27 m³/h", price: "1411 PLN" },
+  { category: "Zawory grzybkowe VFG (gwintowane)", model: "VFG350-39 (3-drog.)", spec: "DN50, kvs 39 m³/h", price: "1886 PLN" },
+  { category: "Zawory grzybkowe VFD (odciążenie grzyba)", model: "VFD215.. (2-drog., siłownik SE5)", spec: "DN15, kvs 0,63–4,0 m³/h", price: "916 PLN" },
+  { category: "Zawory grzybkowe VFD (odciążenie grzyba)", model: "VFD220.. (2-drog., SE5)", spec: "DN20, kvs 5,0–6,3 m³/h", price: "1019 PLN" },
+  { category: "Zawory grzybkowe VFD (odciążenie grzyba)", model: "VFD225.. (2-drog., SE5)", spec: "DN25, kvs 8–10 m³/h", price: "1269 PLN" },
+  { category: "Zawory grzybkowe VFD (odciążenie grzyba)", model: "VFD232.. (2-drog., SE5/SE10)", spec: "DN32, kvs 12,5–16 m³/h", price: "1568 PLN" },
+  { category: "Zawory grzybkowe VFD (odciążenie grzyba)", model: "VFD240.. (2-drog., SE5/SE10)", spec: "DN40, kvs 20–25 m³/h", price: "1969 PLN" },
+  { category: "Zawory grzybkowe VFD (odciążenie grzyba)", model: "VFD250.. (2-drog., SE5/SE10)", spec: "DN50, kvs 31,5–40 m³/h", price: "2582 PLN" },
+
+  // AVF + VF kołnierzowe
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "AVF12 / AVF18", spec: "1200N / 1800N, sterowanie 2-/3-punktowe, 24V AC/DC", price: "3300–3655 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "AVF12M / AVF18M", spec: "1200N / 1800N, sterowanie 0-10V / 4-20mA", price: "3655–4000 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "VF265 / VF365", spec: "DN65, kvs 63 m³/h, 2-drog. / 3-drog.", price: "2477–2577 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "VF280 / VF380", spec: "DN80, kvs 100 m³/h, 2-drog. / 3-drog.", price: "2845–2945 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "VF2100 / VF3100", spec: "DN100, kvs 145 m³/h, 2-drog. / 3-drog.", price: "3822–3922 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "VF2125 / VF3125", spec: "DN125, kvs 220 m³/h, 2-drog. / 3-drog.", price: "5260–5360 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "VF2150 / VF3150", spec: "DN150, kvs 320 m³/h, 2-drog. / 3-drog.", price: "6970–7070 PLN" },
+  { category: "Siłowniki AVF i zawory kołnierzowe VF", model: "VF2200 / VF3200", spec: "DN200, kvs 550 m³/h, 2-drog. / 3-drog.", price: "12200–12300 PLN" },
+
+  // MVE + 2F/3F
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "MVE506 / MVE510 / MVE515 / MVE522", spec: "24VAC/DC, 3-punktowe / 0-10V", price: "2150–3020 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "MVE206 / MVE210 / MVE215 / MVE222", spec: "230VAC, 3-punktowe / 0-10V", price: "2510–3290 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "2FGA15.. – 2FGA15", spec: "2-drogowy, DN15, kvs 0,6–4 m³/h", price: "1750 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "2FGA20", spec: "2-drogowy, DN20, kvs 6,3 m³/h", price: "1880 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "2FGA25", spec: "2-drogowy, DN25, kvs 10 m³/h", price: "2300 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "2FGA32", spec: "2-drogowy, DN32, kvs 16 m³/h", price: "2380 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "2FGA40", spec: "2-drogowy, DN40, kvs 22 m³/h", price: "2760 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "2FGA50", spec: "2-drogowy, DN50, kvs 32 m³/h", price: "2880 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "3FGB65", spec: "3-drogowy, DN65, kvs 63 m³/h", price: "2110 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "3FGB80", spec: "3-drogowy, DN80, kvs 100 m³/h", price: "2440 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "3FGB100", spec: "3-drogowy, DN100, kvs 130 m³/h", price: "3100 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "3FGB125", spec: "3-drogowy, DN125, kvs 200 m³/h", price: "4730 PLN" },
+  { category: "Siłownik MVE i zawory kołnierzowe 2F / 3F", model: "3FGB150", spec: "3-drogowy, DN150, kvs 300 m³/h", price: "5930 PLN" },
+
+  // SM + DB-VZ
+  { category: "Zawory strefowe DB-VZ i siłownik SM", model: "SM230/CA / SM24/CA", spec: "siłownik synchroniczny, on/off, 230V / 24V AC/DC", price: "240 PLN" },
+  { category: "Zawory strefowe DB-VZ i siłownik SM", model: "DB-VZ 2-15 / 2-20 / 2-25", spec: "2-drogowy, DN15–DN25", price: "202–232 PLN" },
+  { category: "Zawory strefowe DB-VZ i siłownik SM", model: "DB-VZ 3-15 / 3-20 / 3-25", spec: "3-drogowy, DN15–DN25", price: "206–237 PLN" },
+
+  // SE1 + VFX
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "SE1M24", spec: "100N, skok 2,5mm, 24V, sterowanie 0-10VDC", price: "374 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "SE1T24 / SE1T230", spec: "100N, on/off, 24V / 230V", price: "193 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "SE1TP24 / SE1TP230", spec: "140N, on/off, 24V / 230V", price: "191 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX210–214 (2-drog.)", spec: "DN15, kvs 0,25–1,6 m³/h", price: "137 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX235 (2-drog.)", spec: "DN20, kvs 2,5 m³/h", price: "145 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX237 / VFX239 (2-drog.)", spec: "DN20, kvs 4–6 m³/h", price: "307–315 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX310–314 (3-drog.)", spec: "DN15, kvs 0,25–1,6 m³/h", price: "149 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX335 (3-drog.)", spec: "DN20, kvs 2,5 m³/h", price: "158 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX337 / VFX339 (3-drog.)", spec: "DN20, kvs 4–6 m³/h", price: "319–349 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX410–414 (3-drog., 4 port)", spec: "DN15, kvs 0,25–1,6 m³/h", price: "162 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX435 (3-drog., 4 port)", spec: "DN20, kvs 2,5 m³/h", price: "171 PLN" },
+  { category: "Siłowniki SE1 i zawory do klimakonwektorów VFX", model: "VFX437 / VFX439 (3-drog., 4 port)", spec: "DN20, kvs 4–6 m³/h", price: "332–345 PLN" },
+
+  // Zawory motylkowe
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 840", spec: "DN40, kvs 50 m³/h, siłownik NACA/M...16", price: "1033 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 850", spec: "DN50, kvs 85 m³/h", price: "1079 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 865", spec: "DN65, kvs 215 m³/h", price: "1164 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 800 (DN80)", spec: "DN80, kvs 420 m³/h", price: "1169 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 8100", spec: "DN100, kvs 800 m³/h, siłownik NACA/M...24", price: "1249 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 8125", spec: "DN125, kvs 1010 m³/h", price: "1466 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "NBFV 8150", spec: "DN150, kvs 2100 m³/h, siłownik NACA/M...32", price: "1779 PLN" },
+  { category: "Zawory motylkowe NBFV 8000 / VF 8000", model: "VF32 / VF40 / VF50 / VF65 / VF80", spec: "DN32–DN80, kvs 40–261 m³/h", price: "930–990 PLN" },
+
+  // ELEMENTY POMIAROWE
+  { category: "Presostaty i przetworniki ciśnienia", model: "DBL-205A / B / C / D / E", spec: "zakres 0,3–25 mbar, do monitorowania filtrów i wentylatorów", price: "123 PLN" },
+  { category: "Presostaty i przetworniki ciśnienia", model: "NPRCN 25", spec: "0–2500 Pa, 0-10/2-10/0-5 VDC", price: "462 PLN" },
+  { category: "Presostaty i przetworniki ciśnienia", model: "DIFFPRESS-25-LCD", spec: "0–1250 Pa, 0-10V/4-20mA, wyświetlacz LCD", price: "466 PLN" },
+  { category: "Presostaty i przetworniki ciśnienia", model: "NPRC 12 / NPRC 25", spec: "0–1250 / 0–2500 Pa, 0-10V/4-20mA", price: "649 PLN" },
+  { category: "Presostaty i przetworniki ciśnienia", model: "NPRC12S25", spec: "0–2500 Pa, podwójny port i wyjście", price: "1050 PLN" },
+  { category: "Czujniki przepływu i poziomu", model: "SF-1K", spec: "1...8\", 11 bar, czynniki standardowe, IP65", price: "364 PLN" },
+  { category: "Czujniki przepływu i poziomu", model: "SF-1E* / SF-1RE", spec: "1...8\", 11 bar, korpus mosiężny, IP65", price: "413–436 PLN" },
+  { category: "Czujniki przepływu i poziomu", model: "SF-3E / SF-4E / SF-6E", spec: "1/2\"–1\", 11 bar, przyłącze rurowe, IP65", price: "491 PLN" },
+  { category: "Czujniki przepływu i poziomu", model: "SF-2E* / SF-2RE", spec: "1...8\", 30 bar, czynniki agresywne, IP65", price: "895–904 PLN" },
+  { category: "Czujniki przepływu i poziomu", model: "SL1E", spec: "przepływ powietrza 1–9,2 m/s, do 85°C", price: "385 PLN" },
+  { category: "Czujniki przepływu i poziomu", model: "SQ-01", spec: "poziom cieczy, korpus mosiądz, pływak poliwęglan, do 85°C", price: "535 PLN" },
+  { category: "Przetworniki prędkości powietrza (TVA)", model: "TVA", spec: "zakres 0…10/15/20 m/s, wyjście 0-10V lub 4-20mA, 24VAC/DC", price: "1980 PLN" },
+  { category: "Czujniki CO2 i jakości powietrza", model: "CO2-SENS-R", spec: "0…2000 ppm, pomieszczeniowy, 0(5)-10V/MODRTU", price: "690 PLN" },
+  { category: "Czujniki CO2 i jakości powietrza", model: "CO2-SENS-D", spec: "0…2000 ppm, kanałowy, 0(5)-10V/MODRTU", price: "765 PLN" },
+  { category: "Czujniki CO2 i jakości powietrza", model: "DB-RLQ", spec: "pomieszczeniowy, 0-10VDC/0-20mA/4-20mA", price: "1520 PLN" },
+  { category: "Czujniki CO2 i jakości powietrza", model: "DB-KLQ", spec: "kanałowy, 0-10VDC/0-20mA/4-20mA", price: "1820 PLN" },
+  { category: "Przemysłowe przetworniki wilgotności (TU)", model: "TUC1 / TUC2 / TUC3", spec: "kanałowe, 0…100% wilg., IP65", price: "691–695 PLN" },
+  { category: "Przemysłowe przetworniki wilgotności (TU)", model: "TUE1 / TUE2", spec: "pomieszczenie / zewnętrzne, 0…100% wilg., IP65", price: "691 PLN" },
+  { category: "Higrostaty", model: "DBZH-101", spec: "pomieszczeniowy, 35…100% wilg. wzgl.", price: "384 PLN" },
+  { category: "Higrostaty", model: "DBKH-10", spec: "kanałowy, 30…100% wilg. wzgl.", price: "900 PLN" },
+  { category: "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)", model: "DTS-Pt1000/E / DTS-NTC10k/E", spec: "kanałowe, wersja ekonomiczna", price: "55 PLN" },
+  { category: "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)", model: "DTS-Pt1000 / DTS-NTC10k", spec: "kanałowe", price: "60 PLN" },
+  { category: "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)", model: "PTS-Pt1000 / PTS-NTC10k", spec: "przylgowe", price: "60 PLN" },
+  { category: "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)", model: "RTS-Pt1000 / RTS-NTC10k", spec: "pomieszczeniowe", price: "60 PLN" },
+  { category: "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)", model: "OTS-Pt1000 / OTS-NTC10k", spec: "zewnętrzne", price: "60 PLN" },
+  { category: "Przetworniki temperatury i wilgotności", model: "SC-DHTS", spec: "kanałowy, 0-100%, -30…70°C, wyjście 0-10V/4-20mA + Modbus RTU (cena promocyjna do 31.06.2025)", price: "250 PLN" },
+  { category: "Przetworniki temperatury i wilgotności", model: "SC-DHTS-PT1000 / SC-DHTS-NTC10k", spec: "jak SC-DHTS, z pasywnym czujnikiem temperatury (cena promocyjna do 31.06.2025)", price: "285 PLN" },
+  { category: "Przetworniki temperatury i wilgotności", model: "RTH-SENS-D", spec: "kanałowy, 0-100%, 0-50°C, 0(5)-10V/MODRTU", price: "510 PLN" },
+  { category: "Przetworniki temperatury i wilgotności", model: "RTH-SENS-R", spec: "pomieszczeniowy, 0-100%, 0-50°C, 0(5)-10V/MODRTU", price: "505 PLN" },
+  { category: "Przetworniki temperatury i wilgotności", model: "TUCH3", spec: "kanałowy, 0…100% wilg., -40…+50°C, IP54", price: "470 PLN" },
+  { category: "Termostaty przeciwzamrożeniowe TD", model: "TD1 / TD2 / TD3", spec: "kasowanie automatyczne, kapilara 1,8–6 m", price: "243–281 PLN" },
+  { category: "Termostaty przeciwzamrożeniowe TD", model: "TD1R / TD2R / TD3R", spec: "kasowanie ręczne, kapilara 1,8–6 m", price: "265–302 PLN" },
+  { category: "Termostaty kanałowe TZ", model: "TZ090U", spec: "0…+90°C, funkcja TW", price: "287 PLN" },
+  { category: "Termostaty kanałowe TZ", model: "TZR6585", spec: "65…+85°C, funkcja STB", price: "327 PLN" },
+  { category: "Termostaty przylgowe DBAT", model: "DBAT-3 / DBAT-3U", spec: "0…60°C, do rur metalowych", price: "532–545 PLN" },
+  { category: "Termostaty przylgowe DBAT", model: "DBAT-5 / DBAT-5U", spec: "20…90°C, do rur metalowych", price: "532–545 PLN" },
+  { category: "Termostaty zanurzeniowe TV", model: "TV090 / TV090U", spec: "0…90°C, funkcja TR / TW", price: "253–257 PLN" },
+  { category: "Termostaty zanurzeniowe TV", model: "TVR6585 / TVR90110", spec: "65…110°C, funkcja STB", price: "292 PLN" },
+  { category: "Termostaty zanurzeniowe TV", model: "TV09090U / TV090UR85", spec: "podwójny zakres, TW+TW / TW+STB", price: "376–420 PLN" },
+  { category: "Termostaty pomieszczeniowe ET / DBET", model: "ET060 / ET060U", spec: "0…60°C, jednostopniowe", price: "396–406 PLN" },
+  { category: "Termostaty pomieszczeniowe ET / DBET", model: "ET06060 / ET06060U", spec: "0…60°C x2, dwustopniowe", price: "463–470 PLN" },
+  { category: "Termostaty pomieszczeniowe ET / DBET", model: "DBET-22 / DBET-26", spec: "-30…+30°C / 0…+60°C, 1 stopień", price: "383 PLN" },
+  { category: "Termostaty pomieszczeniowe ET / DBET", model: "DBET-23 / DBET-27", spec: "-30…+30°C / 0…+60°C, 1 stopień", price: "366 PLN" },
+  { category: "Termostaty pomieszczeniowe ET / DBET", model: "DBET-22/2 / DBET-26/2", spec: "-30…+30°C / 0…+60°C, 2 stopnie", price: "426 PLN" },
+
+  // Akcesoria
+  { category: "Akcesoria — zadajniki, termostaty EC, modułyI/O", model: "NPG-24", spec: "zadajnik do siłowników przepustnic, LCD, 24/230VAC", price: "319 PLN" },
+  { category: "Akcesoria — zadajniki, termostaty EC, modułyI/O", model: "SC607EC / SC607AC", spec: "termostat klimakonwektorów, RS485/Modbus RTU", price: "300 PLN" },
+  { category: "Akcesoria — zadajniki, termostaty EC, modułyI/O", model: "SC-UI8AO4DO4", spec: "moduł I/O — 8 wejść analog. (opcja cyfrowe), 4 wyjścia analog. 0-10V, 4 wyjścia cyfrowe open-collector, Modbus RTU RS485", price: "300 PLN" },
+
+  // Falowniki
+  { category: "Falowniki jednofazowe EURA E810", model: "E810-0002S2 – E810-0022S2", spec: "0,25–2,2 kW, 1×230V 50/60Hz, obudowa E1/E2", price: "Wycena indywidualna" },
+  { category: "Falowniki trójfazowe EURA E810", model: "E810-0005T3 – E810-0900T3", spec: "0,55–90 kW, 3×400V, obudowy E1–C61", price: "Wycena indywidualna" }
+];
+
+const ioModelsData = [
+  { model: "SC-UI8AO4DO4", ai: "8 (0-10V, konfigurowalne jako cyfrowe)", di: "—", ao: "4 (0-10V)", do_: "4 (open-collector, +12VDC)", price: "300 PLN" },
+  { model: "NSVA0000B / NSVA0000BL", ai: "—", di: "—", ao: "—", do_: "—", price: "860–1080 PLN" },
+  { model: "NSVA0200B / NSVA0200BL", ai: "2 (AI)", di: "—", ao: "—", do_: "—", price: "959–1110 PLN" },
+  { model: "NSVA0222B", ai: "2 (AI)", di: "—", ao: "2 (AO)", do_: "2 (DO)", price: "1320 PLN" }
+];
+
+function normalize(str){
+  return (str || '').toString().toLowerCase()
+    .replace(/[ąàáâ]/g,'a').replace(/[ćç]/g,'c').replace(/[ęèéê]/g,'e')
+    .replace(/[łl]/g,'l').replace(/[ńñ]/g,'n').replace(/[óò]/g,'o')
+    .replace(/[śş]/g,'s').replace(/[źżz]/g,'z');
+}
+
+/* grupowanie szczegółowych kategorii w kilka głównych opcji filtrowania */
+const categoryGroupMap = {
+  "Sterownice": "Sterownice",
+  "Siłowniki przepustnic — standardowe (NACA-M)": "Siłowniki przepustnic",
+  "Siłowniki przepustnic — Modbus RTU (MACA)": "Siłowniki przepustnic",
+  "Siłowniki przepustnic — fail-safe (NECA-M, EFS)": "Siłowniki przepustnic",
+  "Siłowniki przepustnic — fail-safe Modbus RTU (MECA)": "Siłowniki przepustnic",
+  "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)": "Siłowniki przepustnic",
+  "Regulatory VAV (NSVA)": "Siłowniki przepustnic",
+  "Zadajniki do regulatorów VAV (NEVD / NEVR)": "Siłowniki przepustnic",
+  "Siłowniki zaworów kulowych (NABA-M / NEBA-M)": "Zawory i siłowniki zaworów",
+  "Zawory kulowe NVCB 7200 (2-drogowe)": "Zawory i siłowniki zaworów",
+  "Zawory kulowe NVCB 7300 (3-drogowe)": "Zawory i siłowniki zaworów",
+  "Siłownik SE4 i zawory grzybkowe VFZ": "Zawory i siłowniki zaworów",
+  "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)": "Zawory i siłowniki zaworów",
+  "Zawory grzybkowe VFG (gwintowane)": "Zawory i siłowniki zaworów",
+  "Zawory grzybkowe VFD (odciążenie grzyba)": "Zawory i siłowniki zaworów",
+  "Siłowniki AVF i zawory kołnierzowe VF": "Zawory i siłowniki zaworów",
+  "Siłownik MVE i zawory kołnierzowe 2F / 3F": "Zawory i siłowniki zaworów",
+  "Zawory strefowe DB-VZ i siłownik SM": "Zawory i siłowniki zaworów",
+  "Siłowniki SE1 i zawory do klimakonwektorów VFX": "Zawory i siłowniki zaworów",
+  "Zawory motylkowe NBFV 8000 / VF 8000": "Zawory i siłowniki zaworów",
+  "Presostaty i przetworniki ciśnienia": "Elementy pomiarowe automatyki",
+  "Czujniki przepływu i poziomu": "Elementy pomiarowe automatyki",
+  "Przetworniki prędkości powietrza (TVA)": "Elementy pomiarowe automatyki",
+  "Czujniki CO2 i jakości powietrza": "Elementy pomiarowe automatyki",
+  "Przemysłowe przetworniki wilgotności (TU)": "Elementy pomiarowe automatyki",
+  "Higrostaty": "Elementy pomiarowe automatyki",
+  "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)": "Elementy pomiarowe automatyki",
+  "Przetworniki temperatury i wilgotności": "Elementy pomiarowe automatyki",
+  "Termostaty przeciwzamrożeniowe TD": "Elementy pomiarowe automatyki",
+  "Termostaty kanałowe TZ": "Elementy pomiarowe automatyki",
+  "Termostaty przylgowe DBAT": "Elementy pomiarowe automatyki",
+  "Termostaty zanurzeniowe TV": "Elementy pomiarowe automatyki",
+  "Termostaty pomieszczeniowe ET / DBET": "Elementy pomiarowe automatyki",
+  "Akcesoria — zadajniki, termostaty EC, modułyI/O": "Elementy pomiarowe automatyki",
+  "Falowniki jednofazowe EURA E810": "Falowniki",
+  "Falowniki trójfazowe EURA E810": "Falowniki"
+};
+
+const cennikRows = pdfCennikRows.map(r => ({ ...r, group: categoryGroupMap[r.category] || r.category }));
+const cennikCategories = ["Wszystkie", ...new Set(cennikRows.map(r => r.group))];
+const cennikFilters = document.getElementById('cennikFilters');
+const cennikBodyEl = document.getElementById('cennikBody');
+const cennikEmptyEl = document.getElementById('cennikEmpty');
+const cennikSearchEl = document.getElementById('cennikSearch');
+let cennikActiveCategory = 'Wszystkie';
+
+function renderCennik(){
+  const term = normalize(cennikSearchEl ? cennikSearchEl.value.trim() : '');
+  let rows = cennikActiveCategory === 'Wszystkie' ? cennikRows : cennikRows.filter(r => r.group === cennikActiveCategory);
+  if(term){
+    rows = rows.filter(r => normalize(r.model).includes(term) || normalize(r.spec).includes(term) || normalize(r.category).includes(term) || normalize(r.group).includes(term));
+  }
+  cennikBodyEl.innerHTML = rows.map(r => `
+    <div class="cennik-row">
+      <span class="c-cat">${r.group}</span>
+      <span class="c-product">${r.category}</span>
+      <span class="c-model">${r.model}</span>
+      <span class="c-spec">${r.spec}</span>
+      <span class="c-price">${r.price}</span>
+    </div>
+  `).join('');
+  if(cennikEmptyEl) cennikEmptyEl.style.display = rows.length ? 'none' : '';
+}
+
+if(cennikFilters){
+  cennikFilters.innerHTML = cennikCategories.map(c => `<button class="cennik-filter-btn${c === 'Wszystkie' ? ' active' : ''}" data-cat="${c}">${c}</button>`).join('');
+  cennikFilters.querySelectorAll('.cennik-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cennikFilters.querySelectorAll('.cennik-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cennikActiveCategory = btn.dataset.cat;
+      renderCennik();
+    });
+  });
+  renderCennik();
+}
+if(cennikSearchEl){
+  cennikSearchEl.addEventListener('input', () => renderCennik());
+}
+
+const ioTableBodyEl = document.getElementById('ioTableBody');
+if(ioTableBodyEl){
+  ioTableBodyEl.innerHTML = ioModelsData.map(r => `
+    <div class="io-row">
+      <span class="io-model" data-label="Model">${r.model}</span>
+      <span class="io-val${r.ai === '—' ? ' io-none' : ''}" data-label="Wejścia analogowe">${r.ai}</span>
+      <span class="io-val${r.di === '—' ? ' io-none' : ''}" data-label="Wejścia cyfrowe">${r.di}</span>
+      <span class="io-val${r.ao === '—' ? ' io-none' : ''}" data-label="Wyjścia analogowe">${r.ao}</span>
+      <span class="io-val${r.do_ === '—' ? ' io-none' : ''}" data-label="Wyjścia cyfrowe">${r.do_}</span>
+      <span class="io-price" data-label="Cena">${r.price}</span>
+    </div>
+  `).join('');
+}
+
+/* ---------- aktualności ---------- */
+const newsData = [
+  { title: "System sterowania wentylacji mechanicznej garażu podziemnego", date: "13.07.2023", tag: "produkt", img: "assets/uploads/2023/09/power1.jpg", body: "Smart Controls oferuje kompletny system sterowania wentylacją mechaniczną garaży podziemnych, wyposażony w detekcję CO i LPG. Rozdzielnica wraz ze sterownikiem przygotowywana jest indywidualnie, zgodnie z wytycznymi konkretnego projektu — od doboru czujników po logikę załączania wentylatorów strumieniowych i bytowych." },
+  { title: "Automatyka PremiumBox+ do central wentylacyjnych", date: "13.07.2023", tag: "produkt", img: "assets/uploads/2023/09/rozdzienicepremium.jpg", body: "PremiumBOX+ umożliwia zdalną obsługę centrali przez użytkownika oraz zdalny serwis bez kosztów dojazdu technika, a oprogramowanie sterownika można aktualizować na odległość. Wbudowany webserwer eliminuje potrzebę dodatkowego panelu — daje graficzny interfejs dostępny z przeglądarki, działa jak aplikacja mobilna na iOS i Androidzie, a na komputerze przypomina obsługę systemu SCADA. Może pracować także w sieci lokalnej, bez dostępu do internetu, oraz integrować się z systemami BMS budynku." },
+  { title: "Katalog Elementów Automatyki 2023", date: "14.01.2021", tag: "katalog", img: "assets/uploads/2021/01/katalogggggggsss.png", body: "Zaktualizowany katalog zbiera w jednym dokumencie pełny przegląd elementów automatyki HVAC dostępnych w ofercie firmy — czujników, zaworów, siłowników i akcesoriów — ułatwiając dobór komponentów do konkretnej instalacji." },
+  { title: "Co to jest zawór kulowy CCV?", date: "24.08.2020", tag: "poradnik", img: "assets/uploads/2020/08/Screenshot_2020-08-24-What-is-a-characterized-ball-valve-Whats-difference-between-ordinary-and-characterized-ball-valve-.png", body: "Zwykły zawór kulowy ma bardzo wysoki współczynnik przepływu (kvs) względem swojej średnicy nominalnej, przez co słabo nadaje się do precyzyjnej regulacji przepływu wody. Zawór CCV (charakteryzowany) wygląda podobnie, ale ma dodatkowe nacięcie w kształcie litery V w kuli lub tarczy, co przekształca go w precyzyjny zawór regulacyjny. Dzięki temu zapewnia stabilniejszą modulację przepływu, jest lżejszy i bardziej kompaktowy niż porównywalny zawór grzybkowy, wytrzymuje wyższe ciśnienie i zwykle kosztuje mniej." },
+  { title: "Nenutec No1", date: "27.04.2020", tag: "marka", img: "assets/uploads/2020/04/111207521_2534032393573680_7186088189403877334_n.jpg", body: "Jako oficjalny dystrybutor NENUTEC Polska, Smart Controls ogłosił poszerzenie oferty o siłowniki przepustnic z funkcją elektronicznego powrotu (Fail-Safe) w wariantach 2/5/6/10/20 Nm, on-off lub modulowane, zasilane 230 V lub 24 V AC/DC — wszystkie dostępne również z wyłącznikami pomocniczymi." },
+  { title: "Rynek nieruchomości hamuje i spadają ceny", date: "27.04.2020", tag: "branża", body: "Wpis komentujący spowolnienie na rynku nieruchomości w pierwszych miesiącach pandemii COVID-19 i jego możliwy wpływ na tempo nowych inwestycji budowlanych, a tym samym na zapotrzebowanie na automatykę wentylacji i klimatyzacji w nowo powstających obiektach." },
+  { title: "Siłownik obrotowy do zaworów kulowych", date: "17.04.2020", tag: "produkt", img: "assets/uploads/2020/04/plakatnabm1000.png", body: "Standardowe siłowniki obrotowe NENUTEC zaprojektowano do systemów grzewczych, wentylacyjnych i klimatyzacyjnych oraz instalacji z klimakonwektorami wentylatorowymi — do sterowania 2- i 3-drogowymi zaworami kulowymi o różnych wielkościach. Moment obrotowy 2/5/10 Nm, zasilanie 24 V AC/DC lub 230 V AC, sterowanie 2- i 3-punktowe albo analogowe 0(2)...10 VDC, z regulowanym stykiem pomocniczym SPDT i kierunkiem obrotu wybieranym przez użytkownika." },
+  { title: "Przemienniki częstotliwości EURA", date: "15.04.2020", tag: "produkt", body: "Wprowadzenie do oferty przemienników częstotliwości marki EURA (seria E-810/HF Inverter) w wersjach jedno- i trójfazowych, służących do płynnej regulacji obrotów silników wentylatorów i pomp, co przekłada się na oszczędność energii względem pracy ze stałą prędkością." },
+  { title: "PGE przy wsparciu wolontariuszy przekazuje Seniorom płyny do dezynfekcji rąk", date: "14.04.2020", tag: "społeczność", body: "Wpis o lokalnej inicjatywie społecznej z okresu pandemii COVID-19 — przekazaniu środków do dezynfekcji rąk seniorom na Pomorzu przy wsparciu wolontariuszy i spółki PGE." },
+  { title: "Obowiązkowe kontrole szczelności a wprowadzenie stanu zagrożenia epidemicznego", date: "13.04.2020", tag: "przepisy", body: "Informacja o tym, jak wprowadzenie stanu zagrożenia epidemicznego wiosną 2020 r. wpłynęło na terminy i obowiązek wykonywania okresowych kontroli szczelności instalacji chłodniczych i klimatyzacyjnych zawierających czynniki chłodnicze." },
+  { title: "Harmonogram realizacji zamówień", date: "13.04.2020", tag: "firma", body: "Komunikat dla klientów dotyczący organizacji pracy i harmonogramu realizacji zamówień w pierwszych tygodniach pandemii — z informacją o możliwych zmianach standardowych terminów dostaw." },
+  { title: "Energa wspiera walkę z koronawirusem na Pomorzu", date: "13.04.2020", tag: "społeczność", body: "Wpis o wsparciu udzielonym przez spółkę Energa w walce z pandemią koronawirusa w regionie pomorskim, w ramach lokalnych działań solidarnościowych z tego okresu." },
+  { title: "Koronawirus a nieruchomości. Ekspert uspokaja", date: "13.04.2020", tag: "branża", body: "Wpis z komentarzem eksperckim łagodzącym obawy dotyczące wpływu pandemii COVID-19 na rynek nieruchomości i tempo realizacji inwestycji budowlanych w Polsce." },
+  { title: "Stan wyjątkowy w budownictwie", date: "13.04.2020", tag: "branża", body: "Informacja o tym, jak wprowadzenie stanu zagrożenia epidemicznego wiosną 2020 r. wpłynęło na organizację pracy na placach budowy i harmonogramy realizacji inwestycji budowlanych." },
+  { title: "Efekt bumerangu – epidemie są konsekwencją naszych działań", date: "12.04.2020", tag: "branża", body: "Wpis o charakterze ogólnym, odnoszący się do związku między działalnością człowieka a pojawianiem się epidemii, publikowany w szczycie pierwszej fali pandemii COVID-19." },
+  { title: "NENUTEC na targach Acrex 2020", date: "12.04.2020", tag: "marka", body: "Relacja z udziału marki NENUTEC w międzynarodowych targach branży klimatyzacji, wentylacji i chłodnictwa Acrex 2020 — prezentacja aktualnej oferty siłowników i zaworów." },
+  { title: "Koronawirus ogranicza emisje CO2", date: "12.04.2020", tag: "branża", body: "Wpis komentujący obserwowany na początku pandemii spadek globalnych emisji CO2, będący efektem ubocznym ograniczenia aktywności gospodarczej i transportowej." },
+  { title: "Jak koronawirus wpływa na branżę? – wyniki ankiety", date: "12.04.2020", tag: "branża", body: "Podsumowanie wyników ankiety branżowej dotyczącej wpływu pandemii COVID-19 na funkcjonowanie firm z sektora HVAC i budowlanego wiosną 2020 roku." },
+  { title: "Brak dowodów, że systemy klimatyzacji powodują rozprzestrzenianie się koronawirusa", date: "12.04.2020", tag: "poradnik", body: "Wpis odnoszący się do ówczesnego stanu wiedzy naukowej na temat roli instalacji klimatyzacyjnych i wentylacyjnych w rozprzestrzenianiu się wirusa SARS-CoV-2." },
+  { title: "Stanowisko Ministerstwa Klimatu ws. obowiązkowych kontroli szczelności w okresie epidemii", date: "12.04.2020", tag: "przepisy", body: "Informacja o oficjalnym stanowisku Ministerstwa Klimatu dotyczącym wykonywania obowiązkowych okresowych kontroli szczelności urządzeń zawierających substancje kontrolowane (SZWO) i fluorowane gazy cieplarniane (F-gazy) w warunkach pandemii." },
+  { title: "Szpital św. Wojciecha „Copernicus” Gdańsk — 22 centrale", date: "25.03.2020", tag: "realizacja", body: "Wykonanie kompletu rozdzielnic sterujących wentylacją oraz automatyki dla 22 central w szpitalu Copernicus w Gdańsku. Zastosowano falowniki Eura Drives E-810 oraz elementy NENUTEC: siłowniki z elektroniczną funkcją bezpieczeństwa (NECM, NECA), siłowniki przepustnic (NEAM), siłowniki ze sprężyną (NESA), przetworniki i presostaty różnicy ciśnień (NPRC12, DBL-205B/C), zawory grzybkowe 3-drogowe (VFZ) z siłownikiem SE4M24, a także termostaty przeciwzamrożeniowe (TD2/TD3), przetwornik wilgotności kanałowy (TUC2) i przylgowy czujnik temperatury (PTS-NTC10K)." },
+  { title: "NSVA – Inteligentny Siłownik VAV", date: "25.03.2020", tag: "produkt", body: "Wprowadzenie do oferty inteligentnego siłownika VAV serii NSVA, umożliwiającego niezależne od ciśnienia sterowanie zmiennym przepływem powietrza (Variable Air Volume) z wbudowanym regulatorem DDC." },
+  { title: "Podnieś poprzeczkę za pomocą innowacyjnego Vcolor 368", date: "31.01.2019", tag: "produkt", body: "Prezentacja kontrolera EVCO Vcolor 368 — zaawansowanego sterownika z kolorowym wyświetlaczem graficznym, przeznaczonego do central wentylacyjnych i urządzeń chłodniczych." },
+  { title: "Nowe sterowniki od EVCO — EV3 300 & EV3 700", date: "31.01.2019", tag: "produkt", body: "Rozszerzenie oferty o nowe sterowniki EVCO z serii EV3 (modele 300 i 700), przeznaczone do urządzeń chłodniczych i klimatyzacyjnych." },
+  { title: "Uniwersalny sterownik EVCO EV3 400 już dostępny", date: "31.01.2019", tag: "produkt", body: "Dalsze rozszerzenie serii EV3 marki EVCO o uniwersalny model EV3 400, dostępny w ofercie Smart Controls." }
+];
+const newsList = document.getElementById('newsList');
+if(newsList){
+  newsList.innerHTML = newsData.map((n, idx) => `
+    <div class="news-item" data-idx="${idx}">
+      <div class="news-item-head">
+        <h3>${n.title}</h3>
+        <span class="news-date">${n.date}</span>
+        <span class="news-arrow">▾</span>
+      </div>
+      <div class="news-body">
+        <span class="news-tag">${n.tag}</span>
+        ${n.img ? `<img class="news-body-img" src="${n.img}" alt="${n.title}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <p>${n.body}</p>
+      </div>
+    </div>
+  `).join('');
+  newsList.querySelectorAll('.news-item').forEach(item => {
+    item.querySelector('.news-item-head').addEventListener('click', () => {
+      item.classList.toggle('open');
+    });
+  });
+}
+
+/* ---------- realizacje ---------- */
+const U = "assets/uploads/";
+const realizacjeData = [
+  { name: "Osiedle Wiszące Ogrody w Gdańsku - Garaże", img: U+"2023/09/smt-1.png", loc: "Gdańsk - Kiełpinek", meta: "11 układów", date: "2018–2023" },
+  { name: "Szpital Miejski w Toruniu", img: U+"2023/05/smt.png", loc: "Toruń", meta: "3 centrale", date: "kwiecień 2023" },
+  { name: "Kellogg Fabryka Pringles - laboratorium", img: U+"2023/05/kalg.png", loc: "Kutno", meta: "2 centrale", date: "styczeń 2023" },
+  { name: "Wojskowy Instytut Medyczny w Warszawie - GIN i TORA", img: U+"2023/04/wim.png", loc: "Warszawa", meta: "11 central", date: "grudzień 2022" },
+  { name: "Centrum Medyczne Gizińscy", img: U+"2023/04/gizinscy.png", loc: "Bydgoszcz", meta: "7 central", date: "listopad 2022" },
+  { name: "Ośrodek Rehabilitacji Narządu Ruchu", img: U+"2023/04/krzesz.png", loc: "Krzeszowice", meta: "7 central", date: "październik 2022" },
+  { name: "Zespół Placówek Oświatowych w Rudniku", img: U+"2023/04/rudnik.png", loc: "Rudnik", meta: "7 central", date: "styczeń 2023" },
+  { name: "Powiatowe Centrum Zdrowia we Włocławku", img: U+"2023/04/PCZ.png", loc: "Włocławek", meta: "6 central", date: "maj 2022" },
+  { name: "Podkarpackie Centrum Nauki", img: U+"2023/04/PCN.png", loc: "Jasionka", meta: "9 central", date: "marzec 2022" },
+  { name: "Zakład Produkcyjny w Morawicy", img: U+"2023/04/jedrus.png", loc: "Morawica", meta: "15 central", date: "luty 2022" },
+  { name: "Teatr Ludowy w Krakowie", img: U+"2022/09/teatrrrr.png", loc: "Kraków", meta: "5 central", date: "luty 2022" },
+  { name: "Hotel New Skanpol Kołobrzeg", img: U+"2022/09/skarpol.jpg", loc: "Kołobrzeg", meta: "2 centrale", date: "styczeń 2022" },
+  { name: "Zdalne sterowanie Laboratorium — Blirt, ul. 3 Lipy", img: U+"2022/03/trzylipy.jpg", loc: "Gdańsk", meta: "Park Naukowo-Technologiczny", date: "grudzień 2021" },
+  { name: "Szpital Wolski im. dr Anny Gostyńskiej w Warszawie", img: U+"2022/03/szpitalwarszawa.jpg", loc: "Warszawa", meta: "4 centrale", date: "listopad 2021" },
+  { name: "Budynek biurowy MK29, ul. Marii Konopnickiej", img: U+"2022/03/krakow.jpg", loc: "Kraków", meta: "5 central", date: "listopad 2021" },
+  { name: "Szpital Powiatowy w Białogardzie", img: U+"2022/03/bialogard.jpg", loc: "Białogard", meta: "4 centrale", date: "październik 2021" },
+  { name: "Wojskowy Instytut Medyczny w Warszawie", img: U+"2022/03/wim.jpg", loc: "Warszawa", meta: "5 central", date: "wrzesień 2021" },
+  { name: "Sterowanie VAV — Politechnika Wrocławska, bud. H6", img: U+"2022/03/Budynek_H_6_PWr_ul_Wybrzeze_Wyspianskiego_Stanislawa_Wroclaw_5762124.jpg", loc: "Wrocław", meta: "33 pomieszczenia", date: "lipiec 2021" },
+  { name: "Port Lotniczy Warszawa-Radom", img: U+"2022/03/radom.jpg", loc: "Radom", meta: "20 central", date: "maj 2021" },
+  { name: "Modernizacja czytelń Biblioteki Narodowej", img: U+"2021/03/bibliotekanarodowa.jpg", loc: "Warszawa", meta: "26 central", date: "marzec 2021" },
+  { name: "Oddział Septyczny i Ortopedyczny WIM", img: U+"2021/01/WIMortopedia.jpg", loc: "Warszawa", meta: "5 central · Wojskowy Instytut Medyczny", date: "grudzień 2020" },
+  { name: "Wibo Kosmetyki", img: U+"2021/01/wibo.jpg", loc: "Kartuzy", meta: "4 centrale", date: "grudzień 2020" },
+  { name: "Sąd Rejonowy w Toruniu", img: U+"2020/10/sad.jpg", loc: "Toruń", meta: "15 central", date: "wrzesień 2020" },
+  { name: "Woj. Specjalistyczny Szpital Dziecięcy", img: U+"2020/09/SDWO.jpg", loc: "Olsztyn", meta: "7 central", date: "wrzesień 2020" },
+  { name: "Pływalnia i hala sportowa przy CEZiT", img: U+"2020/09/CEZIS.jpg", loc: "Świnoujście", meta: "5 central", date: "sierpień 2020" },
+  { name: "Teatr im. Jana Kochanowskiego", img: U+"2020/07/teatropole.png", loc: "Opole", meta: "9 central", date: "czerwiec 2020" },
+  { name: "Budynek biurowy, ul. Krakowska 29", img: U+"2020/07/wroclaw.png", loc: "Wrocław", meta: "4 centrale", date: "marzec 2020" },
+  { name: "Zakład produkcyjny Chromavis Service", img: U+"2020/07/chroma.png", loc: "Ciechanów", meta: "15 central", date: "listopad 2019" },
+  { name: "Szpital św. Wojciecha „Copernicus”", img: U+"2020/07/copernicus.png", loc: "Gdańsk", meta: "22 centrale", date: "październik 2019" },
+  { name: "Hala produkcyjno-magazynowa Henpol", img: U+"2020/07/gf.png", loc: "Sosnowiec", meta: "9 central", date: "sierpień 2019" },
+  { name: "Blok Ginekologiczny UCK", img: U+"2020/07/szpital.png", loc: "Katowice", meta: "5 central", date: "kwiecień 2019" },
+  { name: "Centrum Kultury w Kamiennej Górze", img: U+"2020/07/kg.png", loc: "Kamienna Góra", meta: "10 central", date: "luty 2019" },
+  { name: "Carlsberg Szczecin", img: U+"2019/04/Prologis-Park-Szczecin-1-e1506080291355-450x257.jpg", loc: "Szczecin", meta: "5 central · Carlsberg", date: "styczeń 2019" },
+  { name: "Budynek biurowy, ul. Zapadła", img: U+"2019/04/wizualizacja_1SBPlaza_1_1.jpg", loc: "Szczecin", meta: "22 centrale · 3 Shape", date: "styczeń 2019" },
+  { name: "Budynek handlowo-usługowy, ul. Dworcowa", img: U+"2018/10/58d51478d5e1f_o_full.jpg", loc: "Lębork", meta: "5 central · Galeria Lębork", date: "wrzesień 2018" },
+  { name: "Budynek biurowy PSG, ul. Wałowa", img: U+"2018/10/2018-10-05-14_09_59-PSG-ul.-Wałowa-Szukaj-w-Google.png", loc: "Gdańsk", meta: "3 centrale · PSG", date: "wrzesień 2018" },
+  { name: "Centrum Badawczo Rozwojowe, ul. Geodetów", img: U+"2018/10/LINET2.jpg", loc: "Gdańsk", meta: "2 centrale · CBR", date: "sierpień 2018" },
+  { name: "Budynek biurowy GH, Garnizon", img: U+"2018/10/gamma_noc2.jpg", loc: "Gdańsk", meta: "3 centrale", date: "sierpień 2018" },
+  { name: "Metropolitalna Szkoła Podstawowa", img: U+"2018/10/2663_900_900.jpg", loc: "Kowale", meta: "5 central", date: "lipiec 2018" },
+  { name: "Przedszkole Artystyczne „Fantazja-Jasień”", img: U+"2018/10/2018-10-05-12_51_15-przedszkole-fantazja-gdańsk-jabłoniowa-Szukaj-w-Google.png", loc: "Gdańsk", meta: "2 centrale", date: "czerwiec 2018" },
+  { name: "Budynek „C” Politechniki Gdańskiej", img: U+"2018/10/1280px-Politechnika_Gdańska_–_Chemia_A_stara_chemia.jpg", loc: "Gdańsk", meta: "9 central", date: "maj 2018" },
+  { name: "Hotel Hel ****", img: U+"2018/10/134014893.jpg", loc: "Hel", meta: "3 centrale", date: "marzec 2018" },
+  { name: "Federal Mogul Bimet — neutralizator odpadów", img: U+"2018/10/1414408.jpg", loc: "Gdańsk", meta: "1 centrala · BIMET", date: "grudzień 2017" },
+  { name: "Przedszkole Modułowe, ul. Srebrna", img: U+"2018/10/kolor1.jpg", loc: "Gdańsk", meta: "2 centrale", date: "listopad 2017" },
+  { name: "Szczecin Business Plaza", img: U+"2018/10/54b1100e030bd_o.jpg", loc: "Szczecin", meta: "10 central", date: "listopad 2017" },
+  { name: "Garnizon, Restauracja „Moje Miejsce”", img: U+"2018/10/2026434.jpg", loc: "Gdańsk", meta: "1 centrala", date: "październik 2017" },
+  { name: "Norwood — produkcja okien i drzwi (lakiernia)", img: U+"2018/10/19.jpg", loc: "Rusocin", meta: "1 centrala", date: "październik 2017" },
+  { name: "GPZ „Gdańsk Centrum”", img: U+"2018/10/gpz_gdansk_centrum.jpg", loc: "Gdańsk", meta: "1 centrala · ENERGA", date: "maj 2017" },
+  { name: "Park Handlowy, ul. Kopernika", img: U+"2018/10/5a049844a30ec000859957.jpg", loc: "Puck", meta: "3 centrale · Biedronka, PEPCO", date: "kwiecień 2017" },
+  { name: "Budynek mieszkalny, ul. Tartaczna (garaż)", img: U+"2018/10/1481837.jpg", loc: "Gdańsk", meta: "1 centrala", date: "marzec 2017" },
+  { name: "Ubojnia Drobiu „Gosz”", img: U+"2018/10/1.png", loc: "Sierakowice", meta: "4 centrale", date: "marzec 2017" },
+  { name: "Garnizon, Kwartał VIII", img: U+"2018/10/4f85510cc8d42_o.jpg", loc: "Gdańsk", meta: "4 centrale", date: "marzec 2017" },
+  { name: "Elfeko S.A.", img: U+"2018/09/elfeko-gdynia-Szukaj-w-Google.png", loc: "Gdynia", meta: "1 centrala", date: "styczeń 2017" },
+  { name: "Dom Medyczny „Żukowo”", img: U+"2018/10/2018-10-05-12_24_37-nadmorskie-centrum-medyczne-żukowo-Szukaj-w-Google.png", loc: "Żukowo", meta: "6 central", date: "listopad 2016" },
+  { name: "Hala produkcyjna, ul. Nowy Świat", img: U+"2018/10/c0315.00_00_15_42240.still003.jpg", loc: "Gdańsk", meta: "1 centrala · BOTA TECHNIK", date: "listopad 2016" },
+  { name: "Zakład produkcyjny COFRESCO POLSKA", img: U+"2018/10/2018-10-05-12_14_24-cofresco-brodnica-Szukaj-w-Google.png", loc: "Brodnica", meta: "4 centrale", date: "listopad 2016" },
+  { name: "Budynek usługowo-handlowy (PEPCO, ROSSMAN)", img: U+"2018/10/5a04990a17bec196289904.jpg", loc: "Straszyn", meta: "4 centrale", date: "listopad 2016" },
+  { name: "Osiedle Hossa Centralpark", img: U+"2018/10/1005281-__kr.jpg", loc: "Gdańsk", meta: "4 centrale · HOSSA", date: "wrzesień 2016" },
+  { name: "Biurowiec Office Kokoszki", img: U+"2018/10/051_office_kokoszki_na_www_1200x_P1030227.jpg", loc: "Gdańsk", meta: "1 centrala", date: "sierpień 2016" },
+  { name: "Centrum Handlowe Kamyk Zielony", img: U+"2018/10/70_full.jpg", loc: "Gdańsk", meta: "4 centrale", date: "lipiec 2016" },
+  { name: "Centrum Handlowe Auchan ETAP 2", img: U+"2018/10/042472_r0_620.jpg", loc: "Gdańsk", meta: "5 central · Auchan", date: "lipiec 2016" },
+  { name: "Federal Mogul Bimet — hala taśm bimetalowych", img: U+"2018/10/1414408.jpg", loc: "Gdańsk", meta: "4 centrale · BIMET", date: "lipiec 2016" },
+  { name: "Centrum Handlowe Metropolia", img: U+"2018/10/o-galerii-top.jpg", loc: "Gdańsk", meta: "22 centrale", date: "czerwiec 2016" },
+  { name: "Hala recyklingu odpadów PET", img: U+"2018/10/IMG_3274.jpg", loc: "Gdynia", meta: "1 centrala · ELCEN", date: "maj 2016" },
+  { name: "Przetwórstwo ryb hodowlanych", img: U+"2018/10/2018-10-05-11_41_46-morpol-Szukaj-w-Google.png", loc: "Duninowo", meta: "43 centrale · MORPOL S.A.", date: "2016–2018" },
+  { name: "Salon wnętrz, ul. Kaszubska Droga", img: U+"2018/10/baner-contact.png", loc: "Chwaszczyno", meta: "4 centrale", date: "marzec 2016" },
+  { name: "Centrum Handlowe Auchan ETAP 1", img: U+"2018/10/042472_r0_620.jpg", loc: "Gdańsk", meta: "3 centrale · Auchan", date: "styczeń 2016" },
+  { name: "Siłownia Baltic Gym (Krzywy Domek)", img: U+"2018/10/WEJSCIE-2.jpg", loc: "Sopot", meta: "1 centrala", date: "styczeń 2016" },
+  { name: "Budynek biurowy, ul. Jabłoniowa", img: U+"2018/10/54d87ee430a02_osize640x400q71hdc363d.jpg", loc: "Gdańsk", meta: "4 centrale", date: "styczeń 2016" },
+  { name: "Polipack — opakowania kosmetyczne", img: U+"2018/10/g102175.jpg", loc: "Gościcino", meta: "8 central", date: "grudzień 2015" },
+  { name: "MAG Morska Agencja", img: U+"2018/10/MAG5.jpg", loc: "Gdynia", meta: "6 central", date: "grudzień 2015" },
+  { name: "Dom Medyczny „Otomińska”", img: U+"2018/10/548c495b20a5e_o.jpg", loc: "Gdańsk", meta: "7 central", date: "listopad 2015" },
+  { name: "Sklep PEPCO, ul. Nieborowska", img: U+"2018/10/1364543.jpg", loc: "Gdańsk", meta: "1 centrala", date: "październik 2015" },
+  { name: "Fundacja „Uśmiech Dziecka”", img: U+"2018/10/2018-10-05-10_28_30-Fundacja-pomocy-dzieciom-niepełnosprawnym-_Uśmiech-Dziecka_-szklana-Szukaj-w-G.png", loc: "Szklana (k. Sierakowic)", meta: "2 centrale", date: "wrzesień 2015" },
+  { name: "Garnizon Kultury, Stary Maneż, Browar Vrest", img: U+"2018/10/obiekt-stary-manez-gdansk-obiekt-stary-manez-gdansk-363644899.jpg", loc: "Gdańsk", meta: "7 central", date: "lipiec 2015" },
+  { name: "Basen Modelowy, Politechnika Gdańska", img: U+"2018/10/nowy-basen-2.jpg", loc: "Gdańsk", meta: "3 centrale", date: "lipiec 2015" },
+  { name: "Konstancińskie Centrum Hydroterapii", img: U+"2018/10/uzdrowisko-konstancin_1.jpg", loc: "Konstancin-Jeziorna", meta: "8 central", date: "czerwiec 2015" },
+  { name: "Garnizon Kultury (ESPRIT HAUS)", img: U+"2018/10/b800h-MDEvZ2Fybml6b24ga3VsdHVyeS9fTUdfMjE2NmJfcGFuby5qcGc.jpg", loc: "Gdańsk", meta: "4 centrale", date: "czerwiec 2015" },
+  { name: "Zakład produkcyjny Rockfin", img: U+"2018/10/Nowa-Siedziba-Firmy.jpg", loc: "Małkowo", meta: "3 centrale · ROCKFIN", date: "marzec 2015" },
+  { name: "Garnizon, SMART HOTEL", img: U+"2018/10/Smart_Hotel_Garnizon-Danzig-Aussenansicht-1-657618.jpg", loc: "Gdańsk", meta: "3 centrale", date: "wrzesień 2014" },
+  { name: "Garnizon, obecnie BLOKFIT", img: U+"2018/10/20170301_170004.jpg", loc: "Gdańsk", meta: "2 centrale", date: "czerwiec 2014" },
+  { name: "Europejskie Centrum Solidarności", img: U+"2018/10/ECS.jpg", loc: "Gdańsk", meta: "24 centrale", date: "czerwiec 2014" }
+];
+
+const realizacjeGrid = document.getElementById('realizacjeGrid');
+if(realizacjeGrid){
+  realizacjeGrid.innerHTML = realizacjeData.map(r => `
+    <div class="realizacja-card">
+      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"></div>
+      <div class="realizacja-body">
+        <h3>${r.name}</h3>
+        <div class="realizacja-meta">
+          <span>📍 ${r.loc}</span>
+          <span><b>${r.meta}</b></span>
+          <span>${r.date}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- do pobrania ---------- */
+const downloadsWrap = document.getElementById('downloadsWrap');
+
+const docData = [
+  {
+    id: "sterownice",
+    label: "Dokumentacja – sterownice SMART",
+    groups: [
+      {
+        heading: "Sterownica PremiumBox do central wentylacyjnych i klimatyzacyjnych",
+        files: [
+          { name: "PremiumBox+ - Dokumentacja techniczno - ruchowa", url: "assets/uploads/2026/04/DTR_PremiumBox_v1.0.029.pdf" },
+          { name: "Deklaracja zgodności PremiumBox+", url: "assets/uploads/2024/07/deklaracjapremiumboxplus.pdf" },
+          { name: "PremiumBox - Dokumentacja techniczno - ruchowa", url: "assets/uploads/2023/06/DTR_PremiumBox-1.pdf" },
+          { name: "Deklaracja zgodności PremiumBox", url: "assets/uploads/2024/07/DeklaracjaZgodnociSmartControls3.pdf" },
+          { name: "Panel SC4 HMI Touch- Dokumentacja techniczna", url: "assets/uploads/2024/02/SC4HMITouch.pdf" },
+          { name: "Panel pGDX - Dokumentacja techniczna", url: "assets/uploads/2023/07/DTR_pGDX_v2.01.pdf" }
+        ]
+      },
+      {
+        heading: "Sterownik do wentylacji bytowej garaży podziemnych",
+        files: [
+          { name: "SC-CTRL-G - Dokumentacja techniczno - ruchowa", url: "assets/uploads/2025/04/DTR_SCCTRLG.pdf" },
+          { name: "PowerBOX - Dokumentacja techniczno - ruchowa", url: "assets/uploads/2023/06/DTR-PowerBox.pdf" },
+          { name: "Deklaracja zgodności PowerBox", url: "assets/uploads/2024/07/deklaracjapremiumboxplus.pdf" }
+        ]
+      },
+      {
+        heading: "Sterownik do rekuperatora",
+        files: [
+          { name: "SC-CTRL-R - Dokumentacja techniczno - ruchowa", url: "assets/uploads/2025/04/DTR_rekuperator-1-1.pdf" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "elementy",
+    label: "Dokumentacja – elementy automatyki",
+    groups: [
+      {
+        heading: "Moduły i panele",
+        files: [
+          { name: "Moduł wejść/wyjść SC-UI8AO4DO4", url: "assets/uploads/2023/07/DTR_pGDX_v2.01.pdf" },
+          { name: "Panel SC4 HMI Touch", url: "assets/uploads/2024/02/SC4HMITouch.pdf" },
+          { name: "Panel pGDX", url: "assets/uploads/2023/07/DTR_pGDX_v2.01.pdf" }
+        ]
+      },
+      {
+        heading: "Czujniki przepływu / poziomu mediów i powietrza",
+        files: [
+          { name: "Czujniki przepływu SF", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki poziomu SQ", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki przepływu powietrza SL1E", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki prędkości powietrza TVA", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Czujniki CO2 i jakości powietrza",
+        files: [
+          { name: "Kanałowy czujnik CO2 z protokołem MODBUS RTU oraz wyjściem analogowym 0-5V / 0-10V CO2-SENS-D", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Pomieszczeniowy czujnik CO2 z protokołem MODBUS RTU oraz wyjściem analogowym 0-5V / 0-10V CO2-SENS-R", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki CO2 kanałowe TCO2C", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki CO2 pomieszczeniowe TCO2A", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Kanałowe i pomieszczeniowe czujniki jakości powietrza", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Presostaty i czujniki ciśnienia",
+        files: [
+          { name: "Przetworniki ciśnienia różnicowego serii NPRC 12", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki ciśnienia różnicowego serii NPRCN 25", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Presostaty różnicy ciśnień DBL", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Deklaracja zgodności presostatu różnicy ciśnień DBL", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Presostaty różnicy ciśnień LF32", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki ciśnienia względnego - 1...40 bar", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Higrostaty i czujniki wilgotności",
+        files: [
+          { name: "Kanałowy przetwornik wilgotności i temperatury 0-10V, 2-10V, 4-20mA, 0-20mA, 0-5V, RS485 Modbus RTU - SC-DHTS", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Kanałowy czujnik wilgotności i temperatury z protokołem MODBUS RTU oraz wyjściem analogowym 0-5V / 0-10V RHT-SENS-D", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Pomieszczeniowy czujnik wilgotności i temperatury z protokołem MODBUS RTU oraz wyjściem analogowym 0-5V / 0-10V RHT-SENS-R", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki temperatury i wilgotności TUC", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki temperatury i wilgotności TUCH3", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki wilgotności i temperatury HTT", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Higrostaty kanałowe DBKH", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Higrostaty pomieszczeniowe", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Termostaty i czujniki temperatury",
+        files: [
+          { name: "Termostat SC607EC Wi-Fi Modbus", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Kanałowy czujnik temperatury DTS-NTC10K", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Kanałowy czujnik temperatury DTS-PT1000", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przylgowy czujnik temperatury PTS-NTC10K", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przylgowy czujnik temperatury PTS-PT1000", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Pomieszczeniowy czujnik temperatury RTS-NTC10k", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Pomieszczeniowy czujnik temperatury RTS-PT1000", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zewnętrzny czujnik temperatury OTS-NTC10k", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zewnętrzny czujnik temperatury OTS-PT1000", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki temperatury TT", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty przeciwzamrożeniowe TF", url: "assets/uploads/2022/01/TD_PL_SMART.pdf" },
+          { name: "Termostaty przeciw zamrożniowe TD", url: "assets/uploads/2022/01/TD_PL_SMART.pdf" },
+          { name: "Termostat do kanałów powietrznych TZ", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty przylgowe DBAT", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty zanurzeniowe TV", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty pomieszczeniowe ET", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty pomieszczeniowe DBET", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Regulatory klimakonwektorów",
+        files: [
+          { name: "DBTA 323 Instalacja 2 rurowa", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "DBTA 343 Instalacja 4 rurowa", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Regulator uniwersalny serii TH Modbus/Bacnet", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "PC-T regulator temperatury", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "PC-H regulator wilgotności", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "PC-TC regulator CO2 i temperatury", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "PC-U regulator uniwersalny", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Akcesoria",
+        files: [
+          { name: "Akcesoria do montażu", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zadajnik z wyświetlaczem LCD", url: "assets/uploads/2018/08/NPG_PL_120316.pdf" }
+        ]
+      },
+      {
+        heading: "Siłowniki zaworów",
+        files: [
+          { name: "SE 1 do VFX", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "NABA 2Nm do NVCB7000", url: "assets/uploads/2021/04/NABA_M_SMART-scalone.pdf" },
+          { name: "NABA 5Nm do NVCB7000", url: "assets/uploads/2021/04/NABA_M_SMART-scalone.pdf" },
+          { name: "NABA 10Nm do NVCB7000", url: "assets/uploads/2021/04/NABA_M_SMART-scalone.pdf" },
+          { name: "NABM 2Nm do NVCB7000", url: "assets/uploads/2021/04/NABA_M_SMART-scalone.pdf" },
+          { name: "NABM 5Nm do NVCB7000", url: "assets/uploads/2021/04/NABA_M_SMART-scalone.pdf" },
+          { name: "NABM 10Nm do NVCB7000", url: "assets/uploads/2021/04/NABA_M_SMART-scalone.pdf" },
+          { name: "NEBA 5Nm z funkcją bezpieczeństwa do NVCB7000", url: "assets/uploads/2021/04/NEBA_M_SMART-scalone.pdf" },
+          { name: "NEBA 10Nm z funkcją bezpieczeństwa do NVCB7000", url: "assets/uploads/2021/04/NEBA_M_SMART-scalone.pdf" },
+          { name: "NEBM 5Nm z funkcją bezpieczeństwa do NVCB7000", url: "assets/uploads/2021/04/NEBA_M_SMART-scalone.pdf" },
+          { name: "NEBM 10Nm z funkcją bezpieczeństwa do NVCB7000", url: "assets/uploads/2021/04/NEBA_M_SMART-scalone.pdf" },
+          { name: "SE4 do VFZ", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "SE5 do VFG, VFD2", url: "assets/uploads/2018/08/SE5_PL.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory do pary",
+        files: [
+          { name: "VFS - 10°C-140°C DN15-DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "VFG3 5°C-185°C DN15 - DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "VFD2 - 5°C-150°C DN15 - DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "2F - 10°C-200°C DN15-DN15", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "3F - 10°C-150°C DN25-DN150", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory motylkowe oraz kulowe odcinające wraz z siłownikami - przyłącze kołnierzowe",
+        files: [
+          { name: "NBFV8000 - 5°C-100°C DN40-DN150", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Seria VF -15°C-90°C DN32-DN80", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "NBFV9000 - 5°C-100°C DN65-DN150", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory grzybkowe z przyłączem kołnierzowym",
+        files: [
+          { name: "VFSF - 10°C-130°C DN15-DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "VF - 10°C-120°C DN50-DN200", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "2F - 10°C-200°C DN15-DN15", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "3F - 10°C-150°C DN25-DN150", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory grzybkowe z przyłączem gwintowanym",
+        files: [
+          { name: "VFZ - 10°C-120°C DN15-DN40", url: "assets/uploads/2021/04/VFZ_PL_SMART.pdf" },
+          { name: "VFS - 10°C-140°C DN15-DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "VFG 2 drog. - 5°C-140°C 3 drog. - 5°C-185°C DN15 - DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "VFD2 - 5°C-150°C DN15 - DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory kulowe z przyłączem gwintowanym",
+        files: [
+          { name: "NVCB7000 -5°-120°C DN15-DN50", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory strefowe",
+        files: [
+          { name: "VFX 2°C-95°C DN15-DN20", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "DB-VZ", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Siłowniki ze sprężyną zwrotną",
+        files: [
+          { name: "Siłownik 3 Nm do 0,5 m² max - Off/3PKT - - NAFA -03", url: "assets/uploads/2021/04/NAFA_M_3SMART-scalone.pdf" },
+          { name: "Siłownik 3 Nm do 0,5 m² max - 0(2) - 10 V - NESM -03", url: "assets/uploads/2021/04/NAFA_M_3SMART-scalone.pdf" },
+          { name: "Siłownik 5 Nm / 3 Nm do 1 m² max - NES-05", url: "assets/uploads/2021/04/NAFA_M_5SMART-scalone.pdf" },
+          { name: "Siłownik 8 Nm do 1,5 m² max - NES...-08", url: "assets/uploads/2021/04/NAFA_M_8SMART-scalone.pdf" },
+          { name: "Siłownik 10 Nm do 2 m² max - NES...-10...", url: "assets/uploads/2021/04/NACA_M_10SMART-scalone.pdf" },
+          { name: "Siłownik 15 Nm do 3 m² max - NES...-15...", url: "assets/uploads/2021/04/NAFA_M_15SMART-scalone.pdf" }
+        ]
+      },
+      {
+        heading: "Inteligentne siłowniki VAV",
+        files: [
+          { name: "Siłownik VAV 5Nm do 1 m² NSVA", url: "assets/uploads/2021/04/NSVA_SMART-scalone.pdf" },
+          { name: "NEVD - Zadajnik pomieszczeniowy do siłowników NSVA", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Siłowniki szybkie",
+        files: [
+          { name: "Specjalny typ 8nM 8 SEC - Do przepustnic o powierzchni do ok. 1.5 m2", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Specjalny typ 16 Nm 16 SEC - Do przepustnic o powierzchni do ok. 3.0 m2", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Siłowniki standardowe",
+        files: [
+          { name: "Kompaktowy siłownik 2 Nm do 0,4 m² On - Off/3PKT - NACA...02", url: "assets/uploads/2021/04/NACA_M_2SMART-scalone.pdf" },
+          { name: "Kompaktowy siłownik 2 Nm do 0,4 m² 0(2)...10 VDC - NCCM...02", url: "assets/uploads/2021/04/NACA_M_2SMART-scalone.pdf" },
+          { name: "Siłownik 2 Nm do 0,4 m² On - Off/3PKT - NACA 02", url: "assets/uploads/2021/04/NACA_M_2SMART-scalone.pdf" },
+          { name: "Siłownik 2 Nm do 0,4 m² 0(2) - 10 V - NACM 02", url: "assets/uploads/2021/04/NACA_M_2SMART-scalone.pdf" },
+          { name: "Siłownik 5 Nm do 1 m² On - Off/3PKT - NACA 05", url: "assets/uploads/2021/04/NACA_M_2SMART-scalone.pdf" },
+          { name: "Siłownik 5 Nm do 1 m² 0(2) - 10 V - NACM 05", url: "assets/uploads/2021/04/NACA_M_2SMART-scalone.pdf" },
+          { name: "Siłownik 10 Nm do 2 m² On - Off/3PKT - NACA 10", url: "assets/uploads/2021/04/NACA_M_10SMART-scalone.pdf" },
+          { name: "Siłownik 10 Nm do 2 m² 0(2) - 10 V - NACM 10", url: "assets/uploads/2021/04/NACA_M_10SMART-scalone.pdf" },
+          { name: "Siłownik 20 Nm do 4 m² On - Off/3PKT - NACA 20", url: "assets/uploads/2021/04/NACA_M_20SMART-scalone.pdf" },
+          { name: "Siłownik 20 Nm do 4 m² 0(2) - 10 V - NACM 20", url: "assets/uploads/2021/04/NACA_M_20SMART-scalone.pdf" },
+          { name: "Siłownik 40 Nm do 7 m² On - Off/3PKT - NACA 40", url: "assets/uploads/2021/04/NACA_M_40SMART-scalone.pdf" },
+          { name: "Siłownik 40 Nm do 7 m² 0(2) - 10 V - NACM 40", url: "assets/uploads/2021/04/NACA_M_40SMART-scalone.pdf" }
+        ]
+      },
+      {
+        heading: "Siłowniki z funkcją bezpieczeństwa",
+        files: [
+          { name: "Siłownik 6 Nm do 1m² on/off 24V / 230V - NECA 1-06 / NECA 2-06", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" },
+          { name: "Siłownik 6 Nm do 1 m² 0-10V 24V - NECM 1.1-06", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" },
+          { name: "Siłownik 10 Nm do 2m² on/off 24V / 230V - NECA 1-10 / NECA 2-10", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" },
+          { name: "Siłownik 10 Nm do 2 m² 0-10V 24V - NECM 1.1-10", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" },
+          { name: "Siłownik 20 Nm do 4m² on/off 24V / 230V - NECA 1-20 / NECA 2-20", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" },
+          { name: "Siłownik 20 Nm do 4 m² 0-10V 24V - NECM 1.1-20", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" }
+        ]
+      },
+      {
+        heading: "Przemienniki częstotliwości",
+        files: [
+          { name: "Przemienniki częstotliwości HF INVERTER serii EURA-800", url: "assets/uploads/2020/04/CE_E810_1.pdf" }
+        ]
+      }
+    ]
+  }
+];
+
+const certData = [
+  {
+    id: "nenutec",
+    label: "Elementy Automatyki",
+    sub: "Certyfikaty i deklaracje zgodności CE dla produktów NENUTEC.",
+    groups: [
+      {
+        heading: "Siłowniki do przepustic powietrza oraz zaworów kulowych",
+        files: [
+          { name: "seria NABA,NABM,NEBM,NEBA,NACA,NACM,NEAA,NEAM,NASA,NASM,NAFA,NEFM,NESM,NESA,NEFA,FSAA,FSAM", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "seria NECA,NECM", url: "assets/uploads/2021/04/NECA_M_SMART-scalone.pdf" }
+        ]
+      },
+      {
+        heading: "Termostaty i czujniki temperatury",
+        files: [
+          { name: "Termostaty pomieszczeniowe - seria DBET", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty przeciwzamrożeniowe - seria TD", url: "assets/uploads/2022/01/TD_PL_SMART.pdf" },
+          { name: "Termostaty pomieszczeniowe - seria ET", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Termostaty przeciwzamrożeniowe - seria TF", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Pasywne przylgowe czujniki temperatury", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Pasywne kanałowe czujniki temperatury", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Przetworniki CO2",
+        files: [
+          { name: "Czujniki CO2 z interfejsem RS-485 CO2-SENS", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetwornik CO2 serii TCO2", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Presostaty i czujniki ciśnienia",
+        files: [
+          { name: "Presostaty różnicy ciśnień - seria DBL", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Presostaty różnicy ciśnień - seria NDPS", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetwornik ciśnienia róznicowego - seria NPRC / NPRCN", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Czujniki przepływu/poziomu mediów i powietrza",
+        files: [
+          { name: "Czujniki przepływu - seria SF", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki poziomu - seria SQ", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki przepływu powietrza - seria SL", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Higrostaty i czujniki wilgotności",
+        files: [
+          { name: "Przetwornik wilgotności i temperatury SC-DHTS", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Czujniki temperatury i wilgotności RTH-SENS", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki wilgotności - seria TUC", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki temperatury i wilgotności TUCH", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Przetworniki wilgotości i temperatury - seria HTT", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Higrostaty kanałowe - seria DBKH", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Higrostaty pomieszczeniowe - seria DBZH", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory strefowe",
+        files: [
+          { name: "Zawory strefowe - seria VFX", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Siłowniki zaworów",
+        files: [
+          { name: "Siłownik zaworu - seria SE1", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Siłownik zaworu - seria SE4", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Siłownik zaworu - seria SE5", url: "assets/uploads/2018/08/SE5_PL.pdf" },
+          { name: "Siłownik zaworu - seria AVF", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Siłownik zaworu - seria MVE", url: "assets/uploads/2018/09/MVE_2F.pdf" },
+          { name: "Siłownik zaworu - seria NEBA/NEBM", url: "assets/uploads/2021/04/NEBA_M_SMART-scalone.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory grzybkowe z przyłączem kołnierzowym",
+        files: [
+          { name: "Zawory grzybkowe z przyłączem kołnierzowym - seria 2F, 3F", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zawory grzybkowe z przyłączem kołnierzowym - seria VF", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zawory grzybkowe z przyłączem kołnierzowym - seria VFSF", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory grzybkowe z przyłączem gwintowanym",
+        files: [
+          { name: "Zawory grzybkowe z przyłączem gwintowanym - seria VFZ", url: "assets/uploads/2021/04/VFZ_PL_SMART.pdf" },
+          { name: "Zawory grzybkowe z przyłączem gwintowanym - seria VFS", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zawory grzybkowe z przyłączem gwintowanym - seria VFG", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      },
+      {
+        heading: "Zawory kulowe z przyłączem gwintowanym",
+        files: [
+          { name: "Zawory kulowe - seria NVCB 7200", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zawory kulowe - seria NVCB 7300", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" },
+          { name: "Zawory kulowe - seria NVCB 7000", url: "assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "eura",
+    label: "Produkty EURA DRIVES",
+    sub: "Certyfikaty CE, deklaracje zgodności RoHS i REACH dla przemienników częstotliwości EURA serii E-810.",
+    groups: [
+      {
+        heading: null,
+        files: [
+          { name: "Przemienniki częstotliwości jedno i trójfazowe", url: "assets/uploads/2020/04/CE_E810_1.pdf" }
+        ]
+      }
+    ]
+  }
+];
+
+if(downloadsWrap){
+  // Render documentation tabs (Sterownice SMART + Elementy automatyki)
+  const docTabsHtml = `
+    <div class="download-group" id="docSection">
+      <h3>Dokumentacja</h3>
+      <div class="group-sub">Dokumentacja techniczna podzielona na sterownice SMART oraz elementy automatyki NENUTEC i EURA.</div>
+      <div class="doc-search-wrap">
+        <input type="text" id="docSearch" class="doc-search" placeholder="Szukaj dokumentu (np. „NACA”, „PremiumBox”, „VFZ”)…" autocomplete="off">
+        <svg class="doc-search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><line x1="16.3" y1="16.3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="cert-tabs" id="docTabs">
+        ${docData.map((d, i) => {
+          const total = d.groups.reduce((acc, g) => acc + g.files.length, 0);
+          return `<button class="cert-tab-btn${i===0?' active':''}" data-doc="${d.id}">${d.label}<span class="cert-count">${total}</span></button>`;
+        }).join('')}
+      </div>
+      <div id="docPanels">
+        ${docData.map((d, i) => `
+          <div class="cert-panel${i===0?' active':''}" id="doc-${d.id}">
+            ${d.groups.map(g => `
+              ${g.heading ? `<h4 class="cert-group-heading">${g.heading}</h4>` : ''}
+              <div class="download-list" style="margin-bottom:${g.heading ? '20px' : '0'};">
+                ${g.files.map(f => `
+                  <a class="download-item" href="${f.url}" target="_blank" rel="noopener">
+                    <span class="dl-icon">PDF</span>
+                    <span class="dl-name">${f.name}</span>
+                    <span class="dl-arrow">↓</span>
+                  </a>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+      <div id="docSearchResults" class="download-list" style="display:none;"></div>
+      <div id="docSearchEmpty" class="cennik-empty" style="display:none;">Brak dokumentów pasujących do wyszukiwania.</div>
+    </div>
+  `;
+
+  // Render cennik
+  const cennikHtml = `
+    <div class="download-group">
+      <h3>Cenniki</h3>
+      <div class="group-sub">Aktualne zestawienie układów i elementów automatyki.</div>
+      <div class="download-list">
+        <a class="download-item" href="assets/uploads/2021/01/CennikSmartControls2021-strona.pdf" target="_blank" rel="noopener">
+          <span class="dl-icon">PDF</span>
+          <span class="dl-name">Lista układów i elementów automatyki na rok 2023</span>
+          <span class="dl-arrow">↓</span>
+        </a>
+      </div>
+    </div>
+  `;
+
+  // Oprogramowanie
+  const softwareHtml = `
+    <div class="download-group">
+      <h3>Oprogramowanie</h3>
+      <div class="group-sub">Pobierz oprogramowanie.</div>
+      <h4 class="cert-group-heading">Siłowniki standardowe</h4>
+      <div class="download-list">
+        <a class="download-item" href="assets/uploads/2022/03/Delkaracja_NENUTEC_EU-1.pdf" target="_blank" rel="noopener">
+          <span class="dl-icon">PDF</span>
+          <span class="dl-name">Siłownik 2 Nm do 0,4 m² max - NEAA 24-02</span>
+          <span class="dl-arrow">↓</span>
+        </a>
+      </div>
+    </div>
+  `;
+
+  // render certificates section with tabs
+  const certHtml = `
+    <div class="download-group" id="certSection">
+      <h3>Certyfikaty i deklaracje zgodności</h3>
+      <div class="group-sub">Certyfikaty CE i deklaracje zgodności dla elementów automatyki NENUTEC oraz przemienników EURA DRIVES — zgodnie ze strukturą strony smartcontrols.pl.</div>
+      <div class="cert-tabs" id="certTabs">
+        ${certData.map((c, i) => {
+          const total = c.groups.reduce((acc, g) => acc + g.files.length, 0);
+          return `<button class="cert-tab-btn${i===0?' active':''}" data-cert="${c.id}">${c.label}<span class="cert-count">${total}</span></button>`;
+        }).join('')}
+      </div>
+      <div id="certPanels">
+        ${certData.map((c, i) => `
+          <div class="cert-panel${i===0?' active':''}" id="cert-${c.id}">
+            ${c.groups.map(g => `
+              ${g.heading ? `<h4 class="cert-group-heading">${g.heading}</h4>` : ''}
+              <div class="download-list" style="margin-bottom:${g.heading ? '22px' : '0'};">
+                ${g.files.map(f => `
+                  <a class="download-item" href="${f.url}" target="_blank" rel="noopener">
+                    <span class="dl-icon">PDF</span>
+                    <span class="dl-name">${f.name}</span>
+                    <span class="dl-arrow">↓</span>
+                  </a>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // Reklamacje
+  const reklamacjeHtml = `
+    <div class="download-group">
+      <h3>Reklamacje</h3>
+      <div class="download-list" style="margin-top:18px;">
+        <a class="download-item" href="assets/uploads/2022/01/Ogolne-Warunki-Gwarancji.pdf" target="_blank" rel="noopener">
+          <span class="dl-icon">PDF</span>
+          <span class="dl-name">Ogólne Warunki Gwarancji</span>
+          <span class="dl-arrow">↓</span>
+        </a>
+      </div>
+    </div>
+  `;
+
+  downloadsWrap.innerHTML = cennikHtml + docTabsHtml + softwareHtml + reklamacjeHtml + certHtml;
+
+  // cert tab switching
+  const certTabBtns = document.querySelectorAll('#certTabs .cert-tab-btn');
+  certTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      certTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('#certPanels .cert-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById('cert-' + btn.dataset.cert);
+      if(panel) panel.classList.add('active');
+    });
+  });
+
+  // doc tab switching
+  const docTabBtns = document.querySelectorAll('#docTabs .cert-tab-btn');
+  docTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      docTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('#docPanels .cert-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById('doc-' + btn.dataset.doc);
+      if(panel) panel.classList.add('active');
+    });
+  });
+
+  // doc search — flat index across both documentation tabs
+  const docSearchIndex = [];
+  docData.forEach(d => {
+    d.groups.forEach(g => {
+      g.files.forEach(f => {
+        docSearchIndex.push({ tab: d.label, heading: g.heading, name: f.name, url: f.url });
+      });
+    });
+  });
+  const docSearchEl = document.getElementById('docSearch');
+  const docSearchResultsEl = document.getElementById('docSearchResults');
+  const docSearchEmptyEl = document.getElementById('docSearchEmpty');
+  const docTabsEl = document.getElementById('docTabs');
+  const docPanelsEl = document.getElementById('docPanels');
+
+  function renderDocSearch(){
+    const term = normalize(docSearchEl.value.trim());
+    if(!term){
+      docTabsEl.style.display = '';
+      docPanelsEl.style.display = '';
+      docSearchResultsEl.style.display = 'none';
+      docSearchEmptyEl.style.display = 'none';
+      return;
+    }
+    const matches = docSearchIndex.filter(item =>
+      normalize(item.name).includes(term) ||
+      normalize(item.heading || '').includes(term) ||
+      normalize(item.tab).includes(term)
+    );
+    docTabsEl.style.display = 'none';
+    docPanelsEl.style.display = 'none';
+    if(matches.length){
+      docSearchResultsEl.style.display = '';
+      docSearchEmptyEl.style.display = 'none';
+      docSearchResultsEl.innerHTML = matches.map(item => `
+        <a class="download-item" href="${item.url}" target="_blank" rel="noopener">
+          <span class="dl-icon">PDF</span>
+          <span class="dl-name">${item.name}<div class="doc-search-result-heading">${item.tab}${item.heading ? ' › ' + item.heading : ''}</div></span>
+          <span class="dl-arrow">↓</span>
+        </a>
+      `).join('');
+    } else {
+      docSearchResultsEl.style.display = 'none';
+      docSearchEmptyEl.style.display = '';
+    }
+  }
+  if(docSearchEl){
+    docSearchEl.addEventListener('input', renderDocSearch);
+  }
+}
+
+/* ---------- contact form ---------- */
+const contactForm = document.getElementById('contactForm');
+if(contactForm){
+  contactForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(contactForm);
+    const name = fd.get('name') || '';
+    const phone = fd.get('phone') || '';
+    const email = fd.get('email') || '';
+    const message = fd.get('message') || '';
+    const body = `Osoba kontaktowa: ${name}\nTelefon: ${phone}\nEmail: ${email}\n\nWiadomość:\n${message}`;
+    const mailto = `mailto:adam@smartcontrols.pl?subject=${encodeURIComponent('Zapytanie ze strony smartcontrols.pl')}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  });
+}
+</script>
+
+</body>
+</html>

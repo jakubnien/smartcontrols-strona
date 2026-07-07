@@ -55,15 +55,13 @@ header{
 .logo{
   display:flex;
   align-items:center;
-  background:#000000;
-  padding: 10px 14px;
-  border-radius: 7px;
-  transition: box-shadow .15s, opacity .15s;
+  padding: 10px 0;
+  transition: opacity .15s;
   outline: none;
 }
 .logo:hover{ opacity:0.92; }
-.logo:focus-visible{ box-shadow: 0 0 0 2px var(--amber); }
-.logo.on-start{ box-shadow: 0 0 0 2px rgba(244,124,32,0.5); }
+.logo:focus-visible{ outline: 2px solid var(--amber); outline-offset: 4px; border-radius: 4px; }
+.logo.on-start .logo-img{ filter: drop-shadow(0 0 6px rgba(244,124,32,0.45)); }
 .logo-img{ height: 30px; width: auto; display:block; }
 @keyframes blink{
   0%,100%{opacity:1;}
