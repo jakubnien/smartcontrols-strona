@@ -325,6 +325,8 @@ nav a.active::after{ content:""; display:block; height:2px; background:var(--amb
 }
 .realizacja-photo img{ width:100%; height:100%; object-fit:cover; display:block; transition: transform .3s; }
 .realizacja-card:hover .realizacja-photo img{ transform: scale(1.04); }
+.realizacja-photo.no-photo{ display:flex; align-items:center; justify-content:center; gap:8px; }
+.realizacja-photo.no-photo::after{ content:'Brak zdjęcia'; font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color: var(--steel); }
 .realizacja-body{ padding: 20px 22px 24px; flex:1; }
 .realizacja-card h3{ font-family:'Space Grotesk', sans-serif; font-size:1.0rem; font-weight:600; margin-bottom:12px; line-height:1.3;}
 .realizacja-meta{ display:flex; flex-direction:column; gap:6px; }
@@ -2485,7 +2487,7 @@ const realizacjeGrid = document.getElementById('realizacjeGrid');
 if(realizacjeGrid){
   realizacjeGrid.innerHTML = realizacjeData.map(r => `
     <div class="realizacja-card">
-      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"></div>
+      <div class="realizacja-photo"><img src="${r.img}" alt="${r.name}" loading="lazy" decoding="async" onerror="this.parentElement.classList.add('no-photo'); this.remove();"></div>
       <div class="realizacja-body">
         <h3>${r.name}</h3>
         <div class="realizacja-meta">
