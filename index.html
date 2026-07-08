@@ -1072,8 +1072,9 @@ section{ padding: 90px 6vw; }
 }
 .hours-panel .panel-head{ margin-bottom:16px; }
 .hour-row{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:0.85rem; padding:9px 0; color:var(--steel);}
-.hour-row.today{ color: var(--off-white); }
+.hour-row.today{ color: var(--off-white); font-weight:600; }
 .hour-row .status{ color: var(--amber); font-size:0.78rem; }
+.hour-row .status.open{ color: var(--signal-green); }
 
 .people-grid{
   display:grid;
@@ -1563,17 +1564,17 @@ footer{
       <div class="hours-panel">
         <div class="panel-head">
           <span>Godziny otwarcia</span>
-          <div class="led-row"><div class="led warn"></div></div>
+          <div class="led-row"><div class="led warn" id="hoursLed"></div></div>
         </div>
-        <div class="hour-row today"><span>Poniedziałek</span><span>08:00 – 16:00</span></div>
-        <div class="hour-row"><span>Wtorek</span><span>08:00 – 16:00</span></div>
-        <div class="hour-row"><span>Środa</span><span>08:00 – 16:00</span></div>
-        <div class="hour-row"><span>Czwartek</span><span>08:00 – 16:00</span></div>
-        <div class="hour-row"><span>Piątek</span><span>08:00 – 16:00</span></div>
-        <div class="hour-row"><span>Sobota</span><span>Zamknięte</span></div>
-        <div class="hour-row"><span>Niedziela</span><span>Zamknięte</span></div>
+        <div class="hour-row" data-day="1"><span>Poniedziałek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row" data-day="2"><span>Wtorek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row" data-day="3"><span>Środa</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row" data-day="4"><span>Czwartek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row" data-day="5"><span>Piątek</span><span>08:00 – 16:00</span></div>
+        <div class="hour-row" data-day="6"><span>Sobota</span><span>Zamknięte</span></div>
+        <div class="hour-row" data-day="0"><span>Niedziela</span><span>Zamknięte</span></div>
         <div class="hour-row" style="border-top:1px solid var(--panel-line); margin-top:8px; padding-top:14px;">
-          <span class="status">● Obecnie zamknięte</span><span class="status">Otwarcie: pon. 08:00</span>
+          <span class="status" id="hoursStatus">● Obecnie zamknięte</span><span class="status" id="hoursNext"></span>
         </div>
       </div>
     </div>
@@ -3432,6 +3433,49 @@ if(contactForm){
     window.location.href = mailto;
   });
 }
+
+/* ---------- godziny otwarcia (dynamiczne) ---------- */
+(function(){
+  const OPEN_MIN = 8 * 60, CLOSE_MIN = 16 * 60;
+  const rows = document.querySelectorAll('.hours-panel .hour-row[data-day]');
+  const statusEl = document.getElementById('hoursStatus');
+  const nextEl = document.getElementById('hoursNext');
+  const led = document.getElementById('hoursLed');
+  if(!rows.length || !statusEl || !nextEl || !led) return;
+
+  function refresh(){
+    const now = new Date();
+    const day = now.getDay(); // 0 = niedziela
+    rows.forEach(r => r.classList.toggle('today', +r.dataset.day === day));
+
+    const isWorkday = day >= 1 && day <= 5;
+    const mins = now.getHours() * 60 + now.getMinutes();
+    const isOpen = isWorkday && mins >= OPEN_MIN && mins < CLOSE_MIN;
+
+    if(isOpen){
+      statusEl.textContent = '● Obecnie otwarte';
+      statusEl.classList.add('open');
+      nextEl.textContent = 'Zamknięcie: 16:00';
+      led.className = 'led on';
+    } else {
+      statusEl.textContent = '● Obecnie zamknięte';
+      statusEl.classList.remove('open');
+      let label;
+      if(isWorkday && mins < OPEN_MIN){
+        label = 'dziś 08:00';
+      } else {
+        const names = ['nd.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.'];
+        let d = day;
+        do { d = (d + 1) % 7; } while(d < 1 || d > 5);
+        label = (d === (day + 1) % 7 ? 'jutro' : names[d]) + ' 08:00';
+      }
+      nextEl.textContent = 'Otwarcie: ' + label;
+      led.className = 'led warn';
+    }
+  }
+  refresh();
+  setInterval(refresh, 60000);
+})();
 </script>
 
 </body>
