@@ -103,7 +103,16 @@ header{
 .logo:hover{ opacity:0.92; }
 .logo:focus-visible{ outline: 2px solid var(--amber); outline-offset: 4px; border-radius: 4px; }
 .logo.on-start .logo-img{ filter: drop-shadow(0 0 6px rgba(244,124,32,0.45)); }
-.logo-img{ height: 30px; width: auto; display:block; }
+.logo-img{ height: 34px; width: auto; display:block; }
+.logo-text{
+  font-family:'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.logo-text .logo-text-accent{ color: var(--amber); }
 @keyframes blink{
   0%,100%{opacity:1;}
   50%{opacity:0.35;}
@@ -643,7 +652,7 @@ svg#duct-diagram{ width:100%; height:auto; display:block; }
 .presentation-card{ overflow:hidden; }
 .pres-stage{
   position: relative;
-  min-height: 660px;
+  min-height: 320px;
 }
 .pres-slide{
   position:absolute;
@@ -653,8 +662,9 @@ svg#duct-diagram{ width:100%; height:auto; display:block; }
   transition: opacity .5s ease, transform .5s ease;
   pointer-events:none;
   display:flex;
-  flex-direction:column;
-  gap:20px;
+  flex-direction:row;
+  align-items:center;
+  gap:26px;
 }
 .pres-slide.active{
   opacity:1;
@@ -663,8 +673,8 @@ svg#duct-diagram{ width:100%; height:auto; display:block; }
 }
 .pres-photo{
   flex-shrink:0;
-  width: 100%;
-  aspect-ratio: 16/11;
+  width: 42%;
+  aspect-ratio: 1;
   border-radius:8px;
   background: var(--graphite);
   border:1px solid var(--panel-line);
@@ -672,7 +682,7 @@ svg#duct-diagram{ width:100%; height:auto; display:block; }
   align-items:center;
   justify-content:center;
   overflow:hidden;
-  padding:18px;
+  padding:16px;
 }
 .pres-photo img{
   max-width:100%;
@@ -737,7 +747,8 @@ svg#duct-diagram{ width:100%; height:auto; display:block; }
 .pres-dot.active{ background: var(--amber); transform: scale(1.3); }
 @media (max-width: 640px){
   .pres-stage{ min-height: 600px; }
-  .pres-photo{ aspect-ratio: 4/3; }
+  .pres-slide{ flex-direction:column; }
+  .pres-photo{ width:100%; aspect-ratio: 4/3; }
 }
 
 /* ---------- sections ---------- */
@@ -1353,7 +1364,8 @@ footer{
 
 <header>
   <div class="logo on-start" data-page="start" role="button" tabindex="0" style="cursor:pointer;" aria-label="Smart Controls — strona główna">
-    <img class="logo-img" src="assets/logo.png" alt="Smart Controls">
+    <img class="logo-img" src="assets/logo-icon.png" alt="Smart Control">
+    <span class="logo-text">Smart <span class="logo-text-accent">Control</span></span>
   </div>
   <nav>
     <a href="#" data-page="oferta" class="nav-link">Oferta</a>
@@ -3675,11 +3687,9 @@ function scPatterns(s){
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const stored = localStorage.getItem('sc-theme');
   const theme = stored || (prefersDark ? 'dark' : 'light');
-  const logoImg = document.querySelector('.logo-img');
 
   function applyTheme(t){
     document.documentElement.setAttribute('data-theme', t);
-    if(logoImg) logoImg.src = t === 'dark' ? 'assets/logo-dark-theme.png' : 'assets/logo.png';
   }
   applyTheme(theme);
 
