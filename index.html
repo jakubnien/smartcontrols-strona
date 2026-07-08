@@ -542,6 +542,24 @@ h1 span{ color: var(--amber); }
   letter-spacing:0.08em;
 }
 .pres-panel-title{ color: var(--off-white); font-size:0.95rem; font-weight:700; letter-spacing:0.04em; }
+.lang-switch{
+  display:flex; align-items:center; gap:4px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.8rem;
+  margin-left:auto; margin-right:14px;
+}
+.lang-switch button{
+  background:none; border:none; cursor:pointer; padding:4px 2px;
+  font-family:inherit; font-size:inherit;
+  color: var(--steel);
+  letter-spacing:0.05em;
+}
+.lang-switch button.active{ color: var(--off-white); font-weight:700; }
+.lang-switch button:hover{ color: var(--amber); }
+.lang-switch .lang-sep{ color: var(--panel-line); }
+.mobile-lang{ margin:18px auto 0; justify-content:center; font-size:1rem; }
+html[lang="en"] .realizacja-photo.no-photo::after{ content:'No photo'; }
+html[lang="en"] .pres-photo.no-photo::after{ content:'No photo'; }
 .led-row{ display:flex; gap:7px; }
 .led{ width:8px;height:8px;border-radius:50%; background: var(--panel-line); }
 .led.on{ background: var(--signal-green); box-shadow: 0 0 8px rgba(82,183,136,0.7); animation: blink 3s ease-in-out infinite; }
@@ -1287,6 +1305,9 @@ footer{
     <a href="#" data-page="pobrania" class="nav-link">Do pobrania</a>
     <a href="#" data-page="kontakt" class="nav-link">Kontakt</a>
   </nav>
+  <div class="lang-switch" role="group" aria-label="Wybór języka">
+    <button type="button" data-lang="pl">PL</button><span class="lang-sep">/</span><button type="button" data-lang="en">EN</button>
+  </div>
   <a class="call-btn" href="tel:578430694">☎ 578 430 694</a>
   <button class="hamburger-btn" id="hamburgerBtn" aria-label="Otwórz menu" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -1301,6 +1322,9 @@ footer{
     <a href="#" data-page="pobrania" class="mobile-nav-link">Do pobrania</a>
     <a href="#" data-page="kontakt" class="mobile-nav-link">Kontakt</a>
     <a href="tel:578430694" class="mobile-nav-call">☎ Zadzwoń: 578 430 694</a>
+    <div class="lang-switch mobile-lang" role="group" aria-label="Wybór języka">
+      <button type="button" data-lang="pl">PL</button><span class="lang-sep">/</span><button type="button" data-lang="en">EN</button>
+    </div>
   </nav>
 </div>
 
@@ -1838,7 +1862,7 @@ let currentCategory = null;
 
 function renderCategoryList(key){
   const data = productData[key];
-  modalEyebrow.textContent = `Kategoria ${data.num}`;
+  modalEyebrow.textContent = `${LX('Kategoria', 'Category')} ${data.num}`;
   modalTitle.textContent = data.title;
   modalDesc.textContent = data.desc;
   modalDesc.style.display = '';
@@ -1874,7 +1898,7 @@ function renderProductDetail(key, idx){
     : icon;
   modalDesc.style.display = 'none';
   modalList.innerHTML = `
-    <button class="detail-back" id="detailBack">← Wróć do listy: ${data.title}</button>
+    <button class="detail-back" id="detailBack">← ${LX('Wróć do listy', 'Back to list')}: ${data.title}</button>
     <div class="detail-header">
       <div class="detail-thumb">${thumb}</div>
       <div>
@@ -1885,10 +1909,10 @@ function renderProductDetail(key, idx){
     <div class="detail-body">
       <p class="detail-lead">${item.desc}</p>
       <p>${item.long || ''}</p>
-      ${item.price ? `<div class="detail-price"><span>Cena</span><b>${item.price}</b></div>` : ''}
+      ${item.price ? `<div class="detail-price"><span>${LX('Cena', 'Price')}</span><b>${item.price}</b></div>` : ''}
       ${item.priceTable ? `
         <div class="price-table">
-          <div class="price-table-head"><span>Model</span><span>Specyfikacja</span><span>Cena</span></div>
+          <div class="price-table-head"><span>Model</span><span>${LX('Specyfikacja', 'Specification')}</span><span>${LX('Cena', 'Price')}</span></div>
           ${item.priceTable.map(row => {
             const match = row.m.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
             const model = match ? match[1] : row.m;
@@ -1898,7 +1922,7 @@ function renderProductDetail(key, idx){
         </div>
       ` : ''}
     </div>
-    <div class="detail-note">${item.photo ? 'Zdjęcie produktu ze strony smartcontrols.pl.' : 'Ilustracja poglądowa — schemat przykładowy, nie zdjęcie rzeczywistego produktu.'} Ceny na podstawie cennika Smart Controls (PDF, do pobrania w zakładce „Do pobrania").</div>
+    <div class="detail-note">${item.photo ? LX('Zdjęcie produktu ze strony smartcontrols.pl.', 'Product photo from smartcontrols.pl.') : LX('Ilustracja poglądowa — schemat przykładowy, nie zdjęcie rzeczywistego produktu.', 'Illustrative diagram — example schematic, not a photo of the actual product.')} ${LX('Ceny na podstawie cennika Smart Controls (PDF, do pobrania w zakładce „Do pobrania").', 'Prices based on the Smart Controls price list (PDF, available in the "Downloads" tab).')}</div>
   `;
   document.getElementById('detailBack').addEventListener('click', () => renderCategoryList(key));
 }
@@ -2320,10 +2344,10 @@ function renderCennik(){
   }
   cennikBodyEl.innerHTML = rows.map(r => `
     <div class="cennik-row">
-      <span class="c-cat">${r.group}</span>
-      <span class="c-product">${r.category}</span>
+      <span class="c-cat">${tr(r.group)}</span>
+      <span class="c-product">${tr(r.category)}</span>
       <span class="c-model">${r.model}</span>
-      <span class="c-spec">${r.spec}</span>
+      <span class="c-spec">${tr(r.spec)}</span>
       <span class="c-price">${r.price}</span>
     </div>
   `).join('');
@@ -3452,29 +3476,708 @@ if(contactForm){
     const mins = now.getHours() * 60 + now.getMinutes();
     const isOpen = isWorkday && mins >= OPEN_MIN && mins < CLOSE_MIN;
 
+    const en = (localStorage.getItem('sc-lang') === 'en');
     if(isOpen){
-      statusEl.textContent = '● Obecnie otwarte';
+      statusEl.textContent = en ? '● Open now' : '● Obecnie otwarte';
       statusEl.classList.add('open');
-      nextEl.textContent = 'Zamknięcie: 16:00';
+      nextEl.textContent = en ? 'Closes: 16:00' : 'Zamknięcie: 16:00';
       led.className = 'led on';
     } else {
-      statusEl.textContent = '● Obecnie zamknięte';
+      statusEl.textContent = en ? '● Currently closed' : '● Obecnie zamknięte';
       statusEl.classList.remove('open');
       let label;
       if(isWorkday && mins < OPEN_MIN){
-        label = 'dziś 08:00';
+        label = (en ? 'today' : 'dziś') + ' 08:00';
       } else {
-        const names = ['nd.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.'];
+        const names = en ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['nd.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.'];
         let d = day;
         do { d = (d + 1) % 7; } while(d < 1 || d > 5);
-        label = (d === (day + 1) % 7 ? 'jutro' : names[d]) + ' 08:00';
+        label = (d === (day + 1) % 7 ? (en ? 'tomorrow' : 'jutro') : names[d]) + ' 08:00';
       }
-      nextEl.textContent = 'Otwarcie: ' + label;
+      nextEl.textContent = (en ? 'Opens: ' : 'Otwarcie: ') + label;
       led.className = 'led warn';
     }
   }
   refresh();
   setInterval(refresh, 60000);
+})();
+
+/* ---------- i18n: przełącznik języka PL / EN ---------- */
+function LX(pl, en){ return localStorage.getItem('sc-lang') === 'en' ? en : pl; }
+
+function tr(s){
+  if(typeof s !== 'string' || localStorage.getItem('sc-lang') !== 'en') return s;
+  if(!window.SC_EN) return s; /* słownik jeszcze nie gotowy — nie ruszaj tekstu */
+  const key = s.trim();
+  if(key && window.SC_EN[key] !== undefined) return s.replace(key, window.SC_EN[key]);
+  return scPatterns(s);
+}
+
+function scPatterns(s){
+  let out = s;
+  const months = { 'styczeń':'January','luty':'February','marzec':'March','kwiecień':'April','maj':'May','czerwiec':'June','lipiec':'July','sierpień':'August','wrzesień':'September','październik':'October','listopad':'November','grudzień':'December' };
+  out = out.replace(/styczeń|luty|marzec|kwiecień|maj|czerwiec|lipiec|sierpień|wrzesień|październik|listopad|grudzień/g, m => months[m]);
+  out = out.replace(/(\d+)\s+central(?:e|a|i)?\b/g, (m, n) => n + (n === '1' ? ' AHU unit' : ' AHU units'));
+  out = out.replace(/(\d+)\s+układ(?:ów|y)?\b/g, '$1 systems');
+  out = out.replace(/(\d+)\s+pomieszczeni(?:a|ń)\b/g, '$1 rooms');
+  /* frazy — od najdłuższych do najkrótszych */
+  const terms = [
+    ['sterownica central went./klim., webserwer w standardzie', 'AHU/AC control cabinet, web server as standard'],
+    ['wentylacja bytowa garaży podziemnych', 'extract ventilation for underground car parks'],
+    ['elektroniczna funkcja bezpieczeństwa', 'electronic fail-safe function'],
+    ['do monitorowania filtrów i wentylatorów', 'for filter and fan monitoring'],
+    ['zadajnik do siłowników przepustnic', 'setpoint unit for damper actuators'],
+    ['termostat klimakonwektorów', 'fan-coil thermostat'],
+    ['presostat różnicowy', 'differential pressure switch'],
+    ['sterowanie analogowe', 'analog control'],
+    ['wyjście analogowe', 'analog output'],
+    ['wersja ekonomiczna', 'economy version'],
+    ['cena promocyjna do', 'promotional price until'],
+    ['ze sprężyną powrotną', 'spring-return'],
+    ['sprężyna powrotna', 'return spring'],
+    ['ze sprężyną', 'spring-return'],
+    ['kasowanie ręczne', 'manual reset'],
+    ['korpus mosiężny', 'brass body'],
+    ['korpus mosiądz', 'brass body'],
+    ['pływak poliwęglan', 'polycarbonate float'],
+    ['przyłącze rurowe', 'pipe connection'],
+    ['przepływ cieczy', 'liquid flow'],
+    ['przepływ powietrza', 'air flow'],
+    ['poziom cieczy', 'liquid level'],
+    ['jakość powietrza', 'air quality'],
+    ['styk pomocniczy', 'auxiliary switch'],
+    ['Zamknij/Otwórz', 'Close/Open'],
+    ['czas ruchu', 'running time'],
+    ['gwint. wew.', 'female thread'],
+    ['zależnie od', 'depending on'],
+    ['zawory grzybkowe', 'globe valves'],
+    ['Zawory grzybkowe', 'Globe valves'],
+    ['moduł I/O', 'I/O module'],
+    ['Siłowniki', 'Actuators'],
+    ['siłowników', 'actuators'],
+    ['siłowniki', 'actuators'],
+    ['Siłownik', 'Actuator'],
+    ['siłownika', 'actuator'],
+    ['siłownik', 'actuator'],
+    ['Zadajniki', 'Setpoint units'],
+    ['Zadajnik', 'Setpoint unit'],
+    ['zadajniki', 'setpoint units'],
+    ['zadajnik', 'setpoint unit'],
+    ['zaworów', 'valves'],
+    ['Zawory', 'Valves'],
+    ['zawory', 'valves'],
+    ['sterowanie', 'control'],
+    ['wyświetlacz', 'display'],
+    ['wilgotności', 'humidity'],
+    ['wilgotność', 'humidity'],
+    ['wilg.', 'humidity'],
+    ['temperatury', 'temperature'],
+    ['temperatura', 'temperature'],
+    ['wejścia', 'inputs'],
+    ['wejść', 'inputs'],
+    ['wyjścia', 'outputs'],
+    ['wyjść', 'outputs'],
+    ['wyjście', 'output'],
+    ['podwójny', 'dual'],
+    ['zakres', 'range'],
+    ['funkcja', 'function'],
+    ['stopień', 'stage'],
+    ['kapilara', 'capillary'],
+    ['skok', 'stroke']
+  ];
+  for(const [pl, en] of terms){ out = out.split(pl).join(en); }
+  out = out.replace(/\bdo DN/g, 'up to DN');
+  out = out.replace(/\bdo ([\d,]+) m²/g, 'up to $1 m²');
+  out = out.replace(/(\d)-drogow(?:y|e|a)/g, '$1-way');
+  out = out.replace(/(\d)-punktowe/g, '$1-point');
+  out = out.replace(/pomieszczeniow(?:y|e|a)/g, 'room');
+  out = out.replace(/kanałow(?:y|e|a)/g, 'duct');
+  out = out.replace(/przylgow(?:y|e|a)/g, 'contact');
+  out = out.replace(/zanurzeniow(?:y|e|a)/g, 'immersion');
+  out = out.replace(/zewnętrzn(?:y|e|a)/g, 'outdoor');
+  out = out.replace(/kołnierzow(?:y|e|a)/g, 'flanged');
+  out = out.replace(/gwintowan(?:y|e|a)/g, 'threaded');
+  out = out.replace(/\bod (\d[\d\s]*PLN)/g, 'from $1');
+  return out;
+}
+
+(function(){
+  const lang = localStorage.getItem('sc-lang') || 'pl';
+  document.documentElement.lang = lang;
+  document.querySelectorAll('.lang-switch button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+    btn.addEventListener('click', () => {
+      if(btn.dataset.lang !== lang){
+        localStorage.setItem('sc-lang', btn.dataset.lang);
+        location.reload();
+      }
+    });
+  });
+  if(lang !== 'en') return;
+
+  window.SC_EN = {
+    /* nawigacja / UI */
+    "Oferta": "Products",
+    "Aktualności": "News",
+    "Realizacje": "Projects",
+    "Do pobrania": "Downloads",
+    "Kontakt": "Contact",
+    "☎ Zadzwoń: 578 430 694": "☎ Call: 578 430 694",
+    "Nowości": "What's new",
+    /* hero */
+    "Automatyka HVAC · Rumia": "HVAC automation · Rumia, Poland",
+    "Projektujemy, dostarczamy i serwisujemy systemy automatyki wentylacji i klimatyzacji — od pojedynczego czujnika po całą rozdzielnicę sterującą instalacją budynku.": "We design, supply and service ventilation and air-conditioning automation systems — from a single sensor to a complete control cabinet running the building's installation.",
+    "Zapytaj o wycenę": "Request a quote",
+    "Zobacz ofertę": "View our products",
+    "5,0 / 5 — 5 opinii Google · Siedziba w Rumi": "5.0 / 5 — 5 Google reviews · Based in Rumia, Poland",
+    /* dlaczego my */
+    "Dlaczego my": "Why us",
+    "Fachowe doradztwo zamiast gotowca z katalogu": "Expert advice instead of an off-the-shelf catalogue pick",
+    "Fachowe doradztwo": "Expert advice",
+    "Dobieramy automatykę do realnej instalacji, nie odwrotnie.": "We match the automation to the actual installation, not the other way around.",
+    "Rozwiązania standardowe i dedykowane": "Standard and custom solutions",
+    "Pełen zakres automatyki HVAC — od katalogowych po projektowane pod klienta.": "The full range of HVAC automation — from catalogue products to custom-engineered systems.",
+    "Najwyższa jakość produktów": "Top product quality",
+    "Autoryzowany dystrybutor NENUTEC oraz prefabrykacja rozdzielnic własnej produkcji.": "Authorised NENUTEC distributor and in-house prefabrication of control cabinets.",
+    "Konkurencyjne ceny i szybka realizacja": "Competitive prices and fast delivery",
+    "Krótkie terminy dostaw i wdrożeń bez podnoszenia kosztów.": "Short delivery and commissioning times without driving up costs.",
+    "Forma działalności": "Legal form",
+    "Spółka cywilna": "Civil partnership",
+    "Siedziba": "Headquarters",
+    "Rumia": "Rumia, Poland",
+    "Zakres": "Scope",
+    "Handel / produkcja / usługi": "Trade / manufacturing / services",
+    "Specjalizacja": "Specialisation",
+    "Automatyka HVAC": "HVAC automation",
+    "Dystrybucja": "Distribution",
+    "Ocena klientów": "Customer rating",
+    /* opinie */
+    "Opinie": "Reviews",
+    "Co mówią klienci": "What our clients say",
+    "Oceny zebrane z wizytówki Google firmy Smart Controls S.C.": "Ratings collected from the Google Business profile of Smart Controls S.C.",
+    "na podstawie 5 opinii Google": "based on 5 Google reviews",
+    "Zobacz wszystkie opinie na Google →": "See all reviews on Google →",
+    "„W 100% profesjonaliści. Z takimi to miło współpracować. Polecam.”": "“100% professionals. A pleasure to work with. Highly recommended.”",
+    "„Super firma, 100% profesjonaliści.”": "“Great company, 100% professionals.”",
+    /* oferta */
+    "Kompletna automatyka, nie tylko pojedyncze elementy": "Complete automation, not just individual components",
+    "Zajmujemy się działalnością handlową, produkcyjną i usługową — doradztwem, sprzedażą, montażem oraz serwisem systemów automatyki wentylacji i klimatyzacji.": "We are a trading, manufacturing and service company — consulting, sales, installation and servicing of ventilation and air-conditioning automation systems.",
+    "Automatyka wentylacji": "Ventilation automation",
+    "PremiumBOX+, PowerBOX+ oraz sterowniki SC-CTRL do central wentylacyjnych, rekuperatorów, nagrzewnic i chłodnic.": "PremiumBOX+, PowerBOX+ and SC-CTRL controllers for air-handling units, heat-recovery units, heaters and coolers.",
+    "Moduły i panele": "Modules and panels",
+    "Panele użytkownika central wentylacyjnych oraz moduły rozszerzające wejścia i wyjścia sterownika.": "User panels for air-handling units and modules extending the controller's inputs and outputs.",
+    "Zawory regulacyjne i siłowniki": "Control valves and actuators",
+    "Zawory strefowe, równoważące, kulowe, grzybkowe, motylkowe i do pary wraz z siłownikami NENUTEC.": "Zone, balancing, ball, globe, butterfly and steam valves together with NENUTEC actuators.",
+    "Elementy pomiarowe automatyki": "Measurement components",
+    "Termostaty, higrostaty, presostaty, czujniki CO2, przepływu oraz regulatory klimakonwektorów.": "Thermostats, hygrostats, pressure switches, CO2 and flow sensors, and fan-coil controllers.",
+    "Siłowniki przepustnic": "Damper actuators",
+    "Siłowniki standardowe, szybkie, ze sprężyną zwrotną, z funkcją bezpieczeństwa oraz inteligentne VAV.": "Standard, fast-running, spring-return, fail-safe and intelligent VAV actuators.",
+    "Zawory KVS Valve": "KVS Valve products",
+    "Zawory zwrotne i pozostałe rozwiązania KVS Valve do wentylacji, instalacji wod-kan i przeciwpożarowych.": "Check valves and other KVS Valve solutions for ventilation, plumbing and fire-protection systems.",
+    "Falowniki": "Frequency inverters",
+    "Przemienniki częstotliwości EURA E-810, jedno- i trójfazowe, do regulacji pracy wentylatorów i pomp.": "EURA E-810 frequency inverters, single- and three-phase, for controlling fans and pumps.",
+    "Zobacz produkty": "View products",
+    "Kliknij kategorię, aby zobaczyć rozpisane produkty z oferty Smart Controls.": "Click a category to see the detailed products offered by Smart Controls.",
+    "Cennik": "Price list",
+    "Pełny cennik produktów": "Full product price list",
+    "Rozpisane modele wraz z cenami katalogowymi, na podstawie „Katalogu układów i elementów automatyki” Smart Controls (ceny obowiązują od 1 marca 2025, wersja 1/2025). Możliwe rabaty: do 35% na siłowniki przepustnic, do 25% na zawory i siłowniki zaworów oraz elementy pomiarowe. Falowniki i sterownice wyceniane indywidualnie.": "Itemised models with catalogue prices, based on the Smart Controls “Catalogue of automation systems and components” (prices valid from 1 March 2025, version 1/2025). Available discounts: up to 35% on damper actuators, up to 25% on valves, valve actuators and measurement components. Inverters and control cabinets are quoted individually.",
+    "Pobierz cennik PDF": "Download price list (PDF)",
+    "Moduły i regulatory — wg liczby wejść / wyjść": "Modules and controllers — by number of inputs / outputs",
+    "Modele z rodziny modułów rozszerzających I/O oraz regulatorów VAV różnią się liczbą fizycznych wejść i wyjść — poniżej rozpisane warianty.": "Models in the I/O expansion module and VAV controller families differ in the number of physical inputs and outputs — the variants are listed below.",
+    "Wejścia analogowe": "Analog inputs",
+    "Wejścia cyfrowe": "Digital inputs",
+    "Wyjścia analogowe": "Analog outputs",
+    "Wyjścia cyfrowe": "Digital outputs",
+    "Cena": "Price",
+    "Kategoria": "Category",
+    "Produkt": "Product",
+    "Model / wariant": "Model / variant",
+    "Specyfikacja": "Specification",
+    "Brak modeli spełniających wyszukiwane kryteria.": "No models match your search criteria.",
+    "Wszystkie": "All",
+    "Sterownice": "Control cabinets",
+    "Zawory i siłowniki zaworów": "Valves and valve actuators",
+    /* kategorie cennika */
+    "Siłowniki przepustnic — standardowe (NACA-M)": "Damper actuators — standard (NACA-M)",
+    "Siłowniki przepustnic — Modbus RTU (MACA)": "Damper actuators — Modbus RTU (MACA)",
+    "Siłowniki przepustnic — fail-safe (NECA-M, EFS)": "Damper actuators — fail-safe (NECA-M, EFS)",
+    "Siłowniki przepustnic — fail-safe Modbus RTU (MECA)": "Damper actuators — fail-safe Modbus RTU (MECA)",
+    "Siłowniki przepustnic — ze sprężyną powrotną (NAFA-M)": "Damper actuators — spring-return (NAFA-M)",
+    "Regulatory VAV (NSVA)": "VAV controllers (NSVA)",
+    "Zadajniki do regulatorów VAV (NEVD / NEVR)": "Setpoint units for VAV controllers (NEVD / NEVR)",
+    "Siłowniki zaworów kulowych (NABA-M / NEBA-M)": "Ball valve actuators (NABA-M / NEBA-M)",
+    "Zawory kulowe NVCB 7200 (2-drogowe)": "NVCB 7200 ball valves (2-way)",
+    "Zawory kulowe NVCB 7300 (3-drogowe)": "NVCB 7300 ball valves (3-way)",
+    "Siłownik SE4 i zawory grzybkowe VFZ": "SE4 actuator and VFZ globe valves",
+    "Siłowniki SE5 / SE10 / SE18 / SE25 (zawory grzybkowe)": "SE5 / SE10 / SE18 / SE25 actuators (globe valves)",
+    "Zawory grzybkowe VFG (gwintowane)": "VFG globe valves (threaded)",
+    "Zawory grzybkowe VFD (odciążenie grzyba)": "VFD globe valves (pressure-balanced plug)",
+    "Siłowniki AVF i zawory kołnierzowe VF": "AVF actuators and VF flanged valves",
+    "Siłownik MVE i zawory kołnierzowe 2F / 3F": "MVE actuator and 2F / 3F flanged valves",
+    "Zawory strefowe DB-VZ i siłownik SM": "DB-VZ zone valves and SM actuator",
+    "Siłowniki SE1 i zawory do klimakonwektorów VFX": "SE1 actuators and VFX fan-coil valves",
+    "Zawory motylkowe NBFV 8000 / VF 8000": "NBFV 8000 / VF 8000 butterfly valves",
+    "Presostaty i przetworniki ciśnienia": "Pressure switches and transmitters",
+    "Czujniki przepływu i poziomu": "Flow and level sensors",
+    "Przetworniki prędkości powietrza (TVA)": "Air velocity transmitters (TVA)",
+    "Czujniki CO2 i jakości powietrza": "CO2 and air quality sensors",
+    "Przemysłowe przetworniki wilgotności (TU)": "Industrial humidity transmitters (TU)",
+    "Higrostaty": "Hygrostats",
+    "Czujniki temperatury pasywne (DTS / PTS / RTS / OTS)": "Passive temperature sensors (DTS / PTS / RTS / OTS)",
+    "Przetworniki temperatury i wilgotności": "Temperature and humidity transmitters",
+    "Termostaty przeciwzamrożeniowe TD": "TD frost-protection thermostats",
+    "Termostaty kanałowe TZ": "TZ duct thermostats",
+    "Termostaty przylgowe DBAT": "DBAT contact thermostats",
+    "Termostaty zanurzeniowe TV": "TV immersion thermostats",
+    "Termostaty pomieszczeniowe ET / DBET": "ET / DBET room thermostats",
+    "Akcesoria — zadajniki, termostaty EC, modułyI/O": "Accessories — setpoint units, EC thermostats, I/O modules",
+    "Falowniki jednofazowe EURA E810": "EURA E810 single-phase inverters",
+    "Falowniki trójfazowe EURA E810": "EURA E810 three-phase inverters",
+    /* productData: kategorie */
+    "Rozdzielnice i sterowniki produkowane kontraktowo dla central wentylacyjnych i klimatyzacyjnych — wraz ze wsparciem projektowym i doborem elementów pod konkretną instalację.": "Control cabinets and controllers manufactured to order for ventilation and air-conditioning units — with design support and component selection for the specific installation.",
+    "Interfejsy użytkownika central wentylacyjnych oraz moduły rozszerzające liczbę wejść i wyjść sterownika, oparte o rozwiązania EVCO.": "User interfaces for air-handling units and modules extending the controller's inputs and outputs, based on EVCO solutions.",
+    "Zawory produkcji NENUTEC i innych producentów HVAC do regulacji i odcięcia przepływu w instalacjach wentylacyjnych, grzewczych i chłodniczych.": "Valves by NENUTEC and other HVAC manufacturers for flow control and shut-off in ventilation, heating and cooling installations.",
+    "Czujniki i regulatory NENUTEC dostarczające dane wejściowe dla całej automatyki HVAC — temperatura, wilgotność, ciśnienie i jakość powietrza.": "NENUTEC sensors and controllers providing input data for the entire HVAC automation — temperature, humidity, pressure and air quality.",
+    "Siłowniki NENUTEC do obsługi i pozycjonowania przepustnic powietrza o różnych rozmiarach, w wykonaniach standardowych i o podwyższonym bezpieczeństwie.": "NENUTEC actuators for operating and positioning air dampers of various sizes, in standard and enhanced-safety versions.",
+    "Zawory marki KVS Valve do branży wentylacji mechanicznej, instalacji wodno-kanalizacyjnych i przeciwpożarowych, w atrakcyjnych cenach.": "KVS Valve products for mechanical ventilation, plumbing and fire-protection systems, at attractive prices.",
+    "Przemienniki częstotliwości EURA E-810 (seria HF INVERTER) — kompaktowa konstrukcja, szeroki zakres mocy i gotowość do pracy zaraz po podłączeniu.": "EURA E-810 frequency inverters (HF INVERTER series) — compact design, wide power range and ready to run straight after connection.",
+    /* productData: rozdzielnice */
+    "Rozdzielnica do central wentylacyjnych i klimatyzacyjnych z lub bez odzysku ciepła.": "Control cabinet for ventilation and air-conditioning units with or without heat recovery.",
+    "Obsługuje regulację temperatury i wilgotności, sterowanie wentylatorami, nagrzewnicą, chłodnicą i układem odzysku ciepła. W standardzie webserwer z dostępem przez przeglądarkę i aplikację mobilną, co pozwala na podgląd i zmianę nastaw pracy centrali zdalnie, bez konieczności instalowania dodatkowego oprogramowania.": "Handles temperature and humidity control, fan, heater, cooler and heat-recovery control. A web server with browser and mobile app access is standard, allowing you to monitor and change AHU settings remotely without installing extra software.",
+    "seria premium": "premium series",
+    "Wycena indywidualna": "Individual quote",
+    "PowerBOX+ (garaże podziemne)": "PowerBOX+ (underground car parks)",
+    "Kompletny system sterowania wentylacją mechaniczną garaży podziemnych.": "Complete control system for mechanical ventilation of underground car parks.",
+    "Zapewnia detekcję CO i LPG na trzech progach alarmowych, sterowanie wentylatorami strumieniowymi i bytowymi oraz obsługę przez panel dotykowy SC4G. Integruje się z nadrzędnym systemem BMS budynku przez Modbus RTU, co ułatwia wpięcie garażu w centralny system zarządzania obiektem.": "Provides CO and LPG detection at three alarm thresholds, control of jet and extract fans, and operation via the SC4G touch panel. It integrates with the building's BMS over Modbus RTU, making it easy to connect the car park to the central building management system.",
+    "garaż podziemny": "underground car park",
+    "Sterownik rekuperatora i małych central wentylacyjnych z nagrzewnicą, chłodnicą lub pompą ciepła.": "Controller for heat-recovery units and small AHUs with a heater, cooler or heat pump.",
+    "WiFi i webserwer są w standardzie wyposażenia, a dodatkowy port RS485 Modbus umożliwia komunikację z systemem BMS. Panel dotykowy SC4-R pozwala na dowolne przypisanie wejść i wyjść do potrzeb konkretnej instalacji, bez sztywnego schematu producenta.": "Wi-Fi and a web server come as standard, and an additional RS485 Modbus port enables communication with a BMS. The SC4-R touch panel allows inputs and outputs to be freely assigned to the needs of the specific installation, with no rigid manufacturer scheme.",
+    "rekuperacja": "heat recovery",
+    "Sterownik strefowy do nagrzewnic i chłodnic wodnych.": "Zone controller for water heaters and coolers.",
+    "Wyposażony w panel dotykowy SC4-Z, moduł WiFi i komunikację Modbus RTU RS485. Osiem uniwersalnych wejść oraz programowalny harmonogram pracy pozwalają dopasować sterowanie do zmiennego zapotrzebowania w różnych strefach budynku.": "Equipped with the SC4-Z touch panel, a Wi-Fi module and Modbus RTU RS485 communication. Eight universal inputs and a programmable schedule let you adapt control to varying demand in different building zones.",
+    "nagrzewnice/chłodnice": "heaters/coolers",
+    /* productData: panele */
+    "Panele użytkownika – centrale wentylacyjne": "User panels – air-handling units",
+    "Panele operatorskie do podglądu i zmiany nastaw pracy centrali wentylacyjnej.": "Operator panels for viewing and changing AHU settings.",
+    "Montowane bezpośrednio na obiekcie, umożliwiają obsłudze techniczej podgląd bieżących parametrów pracy centrali oraz szybką zmianę nastaw bez potrzeby logowania się do systemu nadrzędnego.": "Installed directly on site, they let technical staff view current AHU operating parameters and quickly change settings without logging into a supervisory system.",
+    "panel": "panel",
+    "W cenie kompletu z rozdzielnicą": "Included with the cabinet set",
+    "Moduły rozszerzające I/O": "I/O expansion modules",
+    "Dodatkowe wejścia i wyjścia dla sterownika.": "Additional inputs and outputs for the controller.",
+    "Stosowane, gdy instalacja wymaga obsługi większej liczby czujników lub urządzeń wykonawczych niż przewiduje standardowa konfiguracja sterownika — pozwalają rozbudować system bez wymiany całej rozdzielnicy.": "Used when the installation needs to handle more sensors or actuators than the controller's standard configuration allows — they let you expand the system without replacing the whole cabinet.",
+    "od 300 PLN (SC-UI8AO4DO4)": "from 300 PLN (SC-UI8AO4DO4)",
+    /* productData: zawory */
+    "Siłowniki zaworów": "Valve actuators",
+    "Napędy NENUTEC do sterowania zaworami w układach HVAC.": "NENUTEC drives for controlling valves in HVAC systems.",
+    "Stosowane w instalacjach wentylacji, klimatyzacji, ciepłownictwa i chłodnictwa do automatycznego pozycjonowania zaworów regulacyjnych w odpowiedzi na sygnał sterownika.": "Used in ventilation, air-conditioning, heating and cooling installations for automatic positioning of control valves in response to the controller signal.",
+    "napęd NENUTEC": "NENUTEC drive",
+    "od 420 PLN, zależnie od momentu i wersji": "from 420 PLN, depending on torque and version",
+    "Zawory strefowe": "Zone valves",
+    "Kluczowy element wodnych instalacji c.o. i klimatyzacji.": "A key component of water heating and air-conditioning installations.",
+    "Dostępne w wykonaniu 2-drogowym do prostego odcięcia przepływu lub 3-drogowym do przełączania między dwoma obiegami — pozwalają zarządzać ogrzewaniem lub chłodzeniem osobno w wydzielonych strefach budynku.": "Available as 2-way for simple flow shut-off or 3-way for switching between two circuits — they let you manage heating or cooling separately in individual building zones.",
+    "strefowy": "zone",
+    "od 202 PLN, zależnie od DN i liczby dróg": "from 202 PLN, depending on DN and number of ways",
+    "Zawory równoważące": "Balancing valves",
+    "Niezależne od ciśnienia zawory DN15–25.": "Pressure-independent DN15–25 valves.",
+    "Łączą w jednej konstrukcji regulator różnicy ciśnień, ogranicznik przepływu i zawór regulacyjny o charakterystyce stałoprocentowej. Sprawdzają się zarówno w układach o stałej, jak i zmiennej objętości przepływu, upraszczając równoważenie hydrauliczne instalacji.": "They combine a differential-pressure controller, flow limiter and equal-percentage control valve in one body. They work in both constant- and variable-flow systems, simplifying hydraulic balancing of the installation.",
+    "równoważenie": "balancing",
+    "Wycena na zapytanie": "Quote on request",
+    "Zawory kulowe (przyłącze gwintowane)": "Ball valves (threaded connection)",
+    "Zawory odcinające z kulą obrotową.": "Shut-off valves with a rotating ball.",
+    "Dostępne w wersji z pełnym przepływem lub z redukcją przepływu w zależności od średnicy przewiertu kuli. Uszczelnienie z tworzywa odpornego do 220°C pozwala na pracę w instalacjach o podwyższonej temperaturze medium.": "Available in full-bore or reduced-bore versions depending on the ball bore diameter. Sealing made of plastic resistant up to 220°C allows operation in installations with elevated medium temperature.",
+    "kulowy": "ball",
+    "od 141 PLN, zależnie od DN i wersji": "from 141 PLN, depending on DN and version",
+    "Zawory grzybkowe (gwintowane / kołnierzowe)": "Globe valves (threaded / flanged)",
+    "Zawory do precyzyjnej regulacji przepływu.": "Valves for precise flow control.",
+    "Charakteryzują się dużą przepustowością, szerokim zakresem regulacji i cichą pracą, a konserwacja nie wymaga odłączania zaworu od instalacji. Wadą jest wyższy spadek ciśnienia w porównaniu do zaworów kulowych, dlatego sprawdzają się głównie tam, gdzie liczy się dokładność regulacji, a nie minimalizacja strat.": "They offer high flow capacity, a wide control range and quiet operation, and maintenance does not require disconnecting the valve from the installation. The downside is a higher pressure drop compared with ball valves, so they are best where control accuracy matters more than minimising losses.",
+    "grzybkowy": "globe",
+    "od 285 PLN, zależnie od serii i DN": "from 285 PLN, depending on series and DN",
+    "Zawory motylkowe i kulowe odcinające (kołnierz)": "Butterfly and ball shut-off valves (flanged)",
+    "Zawory do pełnego odcięcia instalacji.": "Valves for full shut-off of the installation.",
+    "Stosowane głównie jako zawory odcinające, pozwalające zablokować fragment instalacji technologicznej na czas awarii lub planowych prac serwisowych, bez wpływu na pozostałą część systemu.": "Used mainly as shut-off valves, allowing a section of the process installation to be isolated during a failure or planned service work without affecting the rest of the system.",
+    "odcinający": "shut-off",
+    "od 930 PLN, zależnie od DN": "from 930 PLN, depending on DN",
+    "Zawory do pary": "Steam valves",
+    "Zawory do instalacji parowych.": "Valves for steam installations.",
+    "Korpus wykonany zwykle ze stali nierdzewnej lub węglowej, a uszczelnienie z teflonu wzmocnionego węglografitem zapewnia wyższą odporność termiczną. Odporność na ciśnienie jest niższa niż w zaworach do cieczy — najczęściej do około 10 bar, co trzeba uwzględnić przy doborze do konkretnej instalacji.": "The body is usually made of stainless or carbon steel, and carbon-graphite-reinforced PTFE sealing provides higher thermal resistance. Pressure resistance is lower than in liquid valves — usually up to about 10 bar, which must be considered when selecting for a specific installation.",
+    "para": "steam",
+    /* productData: czujniki */
+    "Termostaty i czujniki temperatury": "Thermostats and temperature sensors",
+    "Pomiar i regulacja temperatury.": "Temperature measurement and control.",
+    "Montowane w kanałach wentylacyjnych, pomieszczeniach lub bezpośrednio w instalacjach wodnych, dostarczają sterownikowi bieżący odczyt temperatury potrzebny do regulacji pracy nagrzewnic, chłodnic i wentylatorów.": "Installed in ventilation ducts, rooms or directly in water installations, they provide the controller with the current temperature reading needed to control heaters, coolers and fans.",
+    "temperatura": "temperature",
+    "od 55 PLN, zależnie od typu": "from 55 PLN, depending on type",
+    "Termostaty klimakonwektorów i fancoili": "Fan-coil thermostats",
+    "Sterowanie pracą klimakonwektorów.": "Controlling fan-coil units.",
+    "Dedykowane jednostkom fancoil — regulują ich pracę w funkcji zadanej temperatury pomieszczenia, niezależnie od centralnego sterowania wentylacją.": "Dedicated to fan-coil units — they control their operation based on the room temperature setpoint, independently of central ventilation control.",
+    "fancoil": "fan coil",
+    "Higrostaty i czujniki wilgotności": "Hygrostats and humidity sensors",
+    "Regulacja wilgotności względnej.": "Relative humidity control.",
+    "Kontrolują poziom wilgotności w instalacjach wentylacyjnych i klimatyzacyjnych, umożliwiając automatyczną reakcję systemu na przekroczenie zadanych progów wilgotności.": "They monitor humidity levels in ventilation and air-conditioning installations, enabling the system to react automatically when set humidity thresholds are exceeded.",
+    "wilgotność": "humidity",
+    "od 384 PLN, zależnie od typu": "from 384 PLN, depending on type",
+    "Presostaty i czujniki ciśnienia": "Pressure switches and sensors",
+    "Pomiar i sygnalizacja ciśnienia.": "Pressure measurement and signalling.",
+    "Wykorzystywane m.in. do kontroli zabrudzenia filtrów powietrza oraz do nadzorowania pracy wentylatorów — wzrost różnicy ciśnień ponad ustaloną wartość sygnalizuje potrzebę serwisu.": "Used, among other things, to monitor air filter fouling and supervise fan operation — a rise in differential pressure above a set value signals the need for service.",
+    "ciśnienie": "pressure",
+    "od 123 PLN, zależnie od zakresu": "from 123 PLN, depending on range",
+    "Sterowanie wentylacją w funkcji jakości powietrza.": "Ventilation control based on air quality.",
+    "Pozwalają na regulację strumienia powietrza w oparciu o rzeczywiste stężenie CO2 (DCV — Demand Controlled Ventilation) zamiast pracy ze stałym, maksymalnym przepływem, co obniża zużycie energii.": "They allow airflow to be adjusted based on actual CO2 concentration (DCV — Demand Controlled Ventilation) instead of running at constant maximum flow, which reduces energy consumption.",
+    "od 690 PLN, zależnie od typu": "from 690 PLN, depending on type",
+    "Czujniki przepływu/poziomu mediów i powietrza": "Flow/level sensors for media and air",
+    "Monitoring przepływu i poziomu.": "Flow and level monitoring.",
+    "Stosowane w instalacjach technologicznych do nadzorowania przepływu cieczy oraz powietrza, a także poziomu mediów w zbiornikach i układach obiegowych.": "Used in process installations to supervise liquid and air flow, as well as media levels in tanks and circulation systems.",
+    "przepływ": "flow",
+    "od 364 PLN, zależnie od typu": "from 364 PLN, depending on type",
+    "Regulatory klimakonwektorów": "Fan-coil controllers",
+    "Zarządzanie pracą klimakonwektorów.": "Managing fan-coil operation.",
+    "Dedykowane budynkom komercyjnym i mieszkalnym, koordynują pracę wielu jednostek klimakonwektorowych w zależności od zadanych parametrów komfortu.": "Dedicated to commercial and residential buildings, they coordinate the operation of multiple fan-coil units according to the set comfort parameters.",
+    "regulator": "controller",
+    "Akcesoria": "Accessories",
+    "Elementy uzupełniające montaż.": "Components completing the installation.",
+    "Obejmują osprzęt potrzebny do prawidłowego montażu i konfiguracji czujników oraz regulatorów — od obudów po elementy mocujące i przyłączeniowe.": "They include the accessories needed for correct installation and configuration of sensors and controllers — from enclosures to mounting and connection components.",
+    "akcesoria": "accessories",
+    "319 PLN (zadajnik NPG-24), 300 PLN (moduł I/O SC-UI8AO4DO4)": "319 PLN (NPG-24 setpoint unit), 300 PLN (SC-UI8AO4DO4 I/O module)",
+    /* productData: siłowniki przepustnic */
+    "Standardowe": "Standard",
+    "Siłowniki NENUTEC (NEAA/NACA, NEAM/NACM).": "NENUTEC actuators (NEAA/NACA, NEAM/NACM).",
+    "Zaprojektowane do obsługi i pozycjonowania przepustnic powietrza w systemach HVAC o różnych rozmiarach — podstawowy wybór tam, gdzie nie jest wymagana dodatkowa funkcja bezpieczeństwa.": "Designed for operating and positioning air dampers in HVAC systems of various sizes — the basic choice where no additional safety function is required.",
+    "standard": "standard",
+    "od 510 PLN, zależnie od momentu obrotowego": "from 510 PLN, depending on torque",
+    "Szybkie": "Fast-running",
+    "Siłowniki o krótkim czasie ruchu.": "Actuators with a short running time.",
+    "Przeznaczone do systemów grzewczych, wentylacyjnych i klimatyzacyjnych, w których liczy się szybka reakcja przepustnicy na zmianę sygnału sterującego. Dostępne w szerokim zakresie obsługiwanych powierzchni przepustnic.": "Intended for heating, ventilation and air-conditioning systems where a fast damper response to control signal changes matters. Available for a wide range of damper areas.",
+    "szybki": "fast",
+    "Ze sprężyną zwrotną": "Spring-return",
+    "Obsługa przepustnic z funkcją bezpieczeństwa.": "Damper operation with a safety function.",
+    "W razie zaniku sygnału sterującego lub zasilania siłownik automatycznie ustawia przepustnicę w bezpiecznej pozycji awaryjnej dzięki mechanicznej sprężynie powrotnej.": "If the control signal or power supply fails, the actuator automatically moves the damper to a safe emergency position thanks to a mechanical return spring.",
+    "sprężyna zwrotna": "spring return",
+    "od 775 PLN, zależnie od momentu obrotowego": "from 775 PLN, depending on torque",
+    "Z funkcją bezpieczeństwa (Fail-Safe EFS)": "With safety function (Fail-Safe EFS)",
+    "Elektroniczna sprężyna Fail-Safe.": "Electronic Fail-Safe spring.",
+    "Oferuje różne czasy pracy i pozycje awaryjne, wysoką dokładność pozycjonowania oraz krótki czas ładowania kondensatora. Stanowi nowocześniejszy następca klasycznych siłowników ze sprężyną mechaniczną.": "Offers various running times and emergency positions, high positioning accuracy and a short capacitor charging time. A more modern successor to classic mechanical-spring actuators.",
+    "od 760 PLN, zależnie od momentu obrotowego": "from 760 PLN, depending on torque",
+    "Inteligentne siłowniki VAV": "Intelligent VAV actuators",
+    "Seria NSVA do sterowania zmiennym przepływem powietrza.": "NSVA series for variable air volume control.",
+    "Niezależne od ciśnienia sterowanie VAV (Variable Air Volume) z wbudowanym regulatorem DDC — stosowane w instalacjach HVAC, aparatach VAV oraz w laboratoriach, gdzie wymagana jest precyzyjna kontrola przepływu powietrza.": "Pressure-independent VAV (Variable Air Volume) control with a built-in DDC controller — used in HVAC installations, VAV terminal units and laboratories where precise airflow control is required.",
+    "od 860 PLN + zadajnik": "from 860 PLN + setpoint unit",
+    "Siłowniki do przepustnic Modbus RTU": "Modbus RTU damper actuators",
+    "Wersje z komunikacją cyfrową.": "Versions with digital communication.",
+    "Wyposażone w interfejs Modbus RTU, co pozwala na integrację z nadrzędnym systemem sterowania i zdalny odczyt parametrów pracy siłownika.": "Equipped with a Modbus RTU interface, allowing integration with a supervisory control system and remote reading of the actuator's operating parameters.",
+    "od 955 PLN, zależnie od momentu obrotowego": "from 955 PLN, depending on torque",
+    /* productData: kvs / falowniki */
+    "Zawory zwrotne": "Check valves",
+    "Zawór samoczynny jednokierunkowy.": "A self-acting one-way valve.",
+    "Zapewnia przepływ płynu tylko w jednym kierunku — przechodzi ze stanu zamknięcia do otwarcia w zależności od znaku różnicy ciśnień po obu jego stronach, chroniąc instalację przed cofnięciem medium.": "It allows fluid to flow in one direction only — it opens or closes depending on the sign of the pressure difference across it, protecting the installation from backflow.",
+    "zwrotny": "check",
+    "Wycena na zapytanie (odrębny cennik KVS Valve)": "Quote on request (separate KVS Valve price list)",
+    "Falowniki jednofazowe": "Single-phase inverters",
+    "Seria EURA E-810, napięcie przyłączeniowe 1× 220–240 VAC ±15%.": "EURA E-810 series, supply voltage 1× 220–240 VAC ±15%.",
+    "Przeznaczone do regulacji obrotów mniejszych wentylatorów i pomp — pozwalają płynnie dopasować wydajność napędu do bieżącego zapotrzebowania instalacji, ograniczając zużycie energii w porównaniu do pracy ze stałą prędkością.": "Intended for speed control of smaller fans and pumps — they smoothly match drive output to the installation's current demand, reducing energy consumption compared with constant-speed operation.",
+    "1-fazowy": "single-phase",
+    "Falowniki trójfazowe": "Three-phase inverters",
+    "Seria EURA E-810 w wykonaniu trójfazowym.": "EURA E-810 series in a three-phase version.",
+    "Stosowane do napędów o większej mocy w instalacjach wentylacyjnych, gdzie regulacja obrotów silnika trójfazowego pozwala na precyzyjne sterowanie pracą wentylatorów i pomp obiegowych.": "Used for higher-power drives in ventilation installations, where three-phase motor speed control enables precise operation of fans and circulation pumps.",
+    "3-fazowy": "three-phase",
+    /* slajdy Nowości */
+    "Oprogramowanie": "Software",
+    "Aplikacje sterujące centralami HVAC": "Applications controlling HVAC units",
+    "Oprogramowanie uniwersalne i dedykowane": "Universal and dedicated software",
+    "Regulacja temperatury i wilgotności": "Temperature and humidity control",
+    "Sterowanie odzyskiem ciepła": "Heat recovery control",
+    "Sterowanie ciśnieniem i przepływem": "Pressure and flow control",
+    "Sterowanie wentylatorami AC / EC": "AC / EC fan control",
+    "RS485 Modbus RTU, Modbus TCP/IP, BACnet, webserver": "RS485 Modbus RTU, Modbus TCP/IP, BACnet, web server",
+    "Standard w sterownicach PremiumBOX+": "Standard in PremiumBOX+ control cabinets",
+    "Zdalny dostęp bez dodatkowego panelu": "Remote access without an extra panel",
+    "Graficzny interfejs, obsługa z poziomu przeglądarki": "Graphical interface, operated from a browser",
+    "Działa na iOS, Android, Windows i macOS": "Works on iOS, Android, Windows and macOS",
+    "Łatwa zmiana nastaw, trybów i harmonogramu pracy": "Easy changes to settings, modes and schedule",
+    "Trzy poziomy dostępu": "Three access levels",
+    "Zdalna aktualizacja sterownika, historia alarmów": "Remote controller updates, alarm history",
+    "Panel dotykowy": "Touch panel",
+    "Panel dotykowy do central AHU · przekątna 4″": "Touch panel for AHUs · 4″ display",
+    "Rozdzielczość 480×480 px": "Resolution 480×480 px",
+    "Wbudowany czujnik temperatury": "Built-in temperature sensor",
+    "Napięcie zasilania: 12 V ~ 24 V DC": "Supply voltage: 12 V ~ 24 V DC",
+    "Komunikacja: RS485, Modbus RTU": "Communication: RS485, Modbus RTU",
+    "Rozbudowane menu parametrów serwisowych": "Extensive service parameter menu",
+    "Panel dotykowy do central AHU · przekątna 7″": "Touch panel for AHUs · 7″ display",
+    "Rozdzielczość 1024×600 px": "Resolution 1024×600 px",
+    "Możliwość wizualizacji pracy centrali": "AHU operation can be visualised",
+    "Możliwość customizacji": "Customisation available",
+    "Sterownik": "Controller",
+    "Sterownik rekuperatorów i małych central wentylacyjnych": "Controller for heat-recovery units and small AHUs",
+    "Układ odzysku energii": "Energy recovery system",
+    "Nagrzewnice wodne i elektryczne (wstępne oraz wtórne)": "Water and electric heaters (pre- and re-heaters)",
+    "Chłodnice wodne oraz freonowe, pompy ciepła": "Water and DX coolers, heat pumps",
+    "Wentylatory AC / EC (sygnał 0–10 V DC)": "AC / EC fans (0–10 V DC signal)",
+    "Gruntowy wymiennik ciepła (GWC), webserver": "Ground heat exchanger (GHE), web server",
+    "Sterownik wentylacji garaży podziemnych": "Controller for underground car park ventilation",
+    "3 progi detekcji CO / LPG": "3 CO / LPG detection thresholds",
+    "Sterowanie wentylatorami strumieniowymi": "Jet fan control",
+    "Wyjście lamp sygnalizacyjnych": "Signal lamp output",
+    "Obsługa przez panel dotykowy i BMS": "Operated via touch panel and BMS",
+    "Sterownik układów strefowych": "Zone system controller",
+    "Sterowanie nagrzewnicą wodną lub elektryczną": "Water or electric heater control",
+    "Sterowanie chłodnicą wodną lub freonową": "Water or DX cooler control",
+    "Obsługa przez panel i BMS": "Operated via panel and BMS",
+    "Rozbudowany harmonogram pracy": "Extensive operating schedule",
+    "Nagrzewnice, chłodnice, pompy ciepła": "Heaters, coolers, heat pumps",
+    "Regulacja ciśnienia": "Pressure control",
+    "Bezpośrednie zasilanie i sterowanie wentylatorów AC / EC": "Direct supply and control of AC / EC fans",
+    "Możliwość rozbudowy zasobów wejść/wyjść": "Expandable input/output resources",
+    "Siłownik VAV": "VAV actuator",
+    "Siłownik do przepustnic VAV z regulatorem przepływu": "VAV damper actuator with flow controller",
+    "Moment obrotowy 5 Nm / 10 Nm": "Torque 5 Nm / 10 Nm",
+    "Powierzchnia przepustnicy 1,0 m² / 2,0 m²": "Damper area 1.0 m² / 2.0 m²",
+    "Interfejs MODBUS": "MODBUS interface",
+    "Różnica ciśnień: 0…500 Pa": "Pressure difference: 0…500 Pa",
+    "Zasilanie: 24 VAC ± 10%": "Power supply: 24 VAC ± 10%",
+    "Sterownice HVAC": "HVAC control cabinets",
+    "Sterownice do systemów wentylacji": "Control cabinets for ventilation systems",
+    "Wykonanie z tworzywa lub obudowy metalowej": "Plastic or metal enclosure versions",
+    "Sygnalizacja zasilania, pracy, awarii i zabrudzenia filtra": "Power, run, fault and dirty filter indication",
+    "Wykonanie wewnętrzne lub zewnętrzne": "Indoor or outdoor versions",
+    "Współpraca z systemami grzania/chłodzenia": "Works with heating/cooling systems",
+    "Komponenty renomowanych producentów": "Components from reputable manufacturers",
+    "Szybkie terminy realizacji, konkurencyjne ceny": "Fast lead times, competitive prices",
+    "Termostat": "Thermostat",
+    "Termostat do obsługi klimakonwektorów i fancoili": "Thermostat for fan-coil units",
+    "Sterowanie wentylatorami EC": "EC fan control",
+    "Sterowanie wentylatorami AC": "AC fan control",
+    "Zasilanie: 90 ~ 230 V AC, montaż podtynkowy": "Power supply: 90 ~ 230 V AC, flush-mounted",
+    "Wbudowany czujnik temperatury NTC 10k": "Built-in NTC 10k temperature sensor",
+    "Zakres regulacji 5°C ~ 35°C": "Control range 5°C ~ 35°C",
+    "RS485 Modbus RTU oraz Wi-Fi": "RS485 Modbus RTU and Wi-Fi",
+    "Sterownik zaworu z regulatorem temperatury": "Valve controller with temperature regulator",
+    "Moment obrotowy 5 Nm, do zaworów kulowych DN15–DN25": "Torque 5 Nm, for DN15–DN25 ball valves",
+    "Sterowanie nagrzewnicą i chłodnicą wodną": "Water heater and cooler control",
+    "Sterowanie dodatkowym siłownikiem": "Additional actuator control",
+    "Programowane wejścia/wyjścia, obsługa przez panel i BMS": "Programmable inputs/outputs, operated via panel and BMS",
+    "Regulator": "Controller",
+    "Zadajnik / regulator 0–10 VDC": "0–10 VDC setpoint unit / controller",
+    "Wybór zadawanej wielkości fizycznej (°C, %, Pa, m³/h, ppm)": "Selectable controlled quantity (°C, %, Pa, m³/h, ppm)",
+    "Wbudowany zegar czasu rzeczywistego": "Built-in real-time clock",
+    "Tygodniowy harmonogram — 5 stref czasowych dziennie": "Weekly schedule — 5 time zones per day",
+    "Regulator PID, zabezpieczenie hasłem tekstowym": "PID controller, text password protection",
+    "Wbudowany czujnik temperatury i wilgotności": "Built-in temperature and humidity sensor",
+    "Sterownik nagrzewnicy elektrycznej": "Electric heater controller",
+    "3 wejścia analogowe (1×0..10V, 2×NTC10k)": "3 analog inputs (1×0..10V, 2×NTC10k)",
+    "1 wyjście analogowe (0..10V / PWM-10V)": "1 analog output (0..10V / PWM-10V)",
+    "3 wyjścia cyfrowe PNP 24 VDC + 7 wyjść bezpotencjałowych": "3 PNP 24 VDC digital outputs + 7 volt-free outputs",
+    "RS485 Modbus RTU": "RS485 Modbus RTU",
+    "Zasilanie 24 V ±15% AC/DC, montaż na szynę DIN": "Power supply 24 V ±15% AC/DC, DIN rail mounting",
+    "Regulator ciśnienia": "Pressure controller",
+    "2 wejścia uniwersalne (NTC 10kΩ, 0..10V, 0..5V, cyfrowe)": "2 universal inputs (NTC 10kΩ, 0..10V, 0..5V, digital)",
+    "2 wyjścia cyfrowe bezpotencjałowe + 2 analogowe 0..10V": "2 volt-free digital outputs + 2 analog 0..10V",
+    "RS485 Modbus RTU Slave": "RS485 Modbus RTU Slave",
+    "Zasilanie 1×230 V AC, 50 Hz": "Power supply 1×230 V AC, 50 Hz",
+    "Klasa szczelności IP65, wbudowany panel sterujący": "IP65 protection rating, built-in control panel",
+    "Moduł I/O": "I/O module",
+    "Moduł wejść/wyjść": "Input/output module",
+    "8 wejść analogowych 0–10V (z opcją pracy cyfrowej)": "8 analog inputs 0–10V (with digital option)",
+    "4 wyjścia analogowe 0–10V": "4 analog outputs 0–10V",
+    "4 wyjścia cyfrowe": "4 digital outputs",
+    "8 wejść uniwersalnych": "8 universal inputs",
+    "6 wyjść cyfrowych": "6 digital outputs",
+    "Zasilanie 24 V ±15% AC/DC, montaż na dystansach": "Power supply 24 V ±15% AC/DC, standoff mounting",
+    "Czujnik": "Sensor",
+    "Kanałowy przetwornik wilgotności i temperatury": "Duct humidity and temperature transmitter",
+    "Wyjście 0-10V, 2-10V, 4-20mA, 0-20mA oraz 0-5V": "Output 0-10V, 2-10V, 4-20mA, 0-20mA and 0-5V",
+    "Interfejs RS485, protokół MODBUS RTU": "RS485 interface, MODBUS RTU protocol",
+    "Zakres pomiaru temperatury: -40 ÷ 125°C": "Temperature measurement range: -40 ÷ 125°C",
+    "Zakres pomiaru wilgotności: 0 ÷ 100 %RH": "Humidity measurement range: 0 ÷ 100 %RH",
+    "Zasilanie: 24 V ±15% AC/DC": "Power supply: 24 V ±15% AC/DC",
+    "Czujniki temperatury NTC10k": "NTC10k temperature sensors",
+    "Wersja kanałowa, pomieszczeniowa, zewnętrzna": "Duct, room and outdoor versions",
+    "Rezystancja w 25°C: 10 000 Ω, tolerancja ± 1%": "Resistance at 25°C: 10,000 Ω, tolerance ± 1%",
+    "Stała Beta (25/85): 3435 ± 1%": "Beta constant (25/85): 3435 ± 1%",
+    "Zakres pomiarowy: -20°C ÷ 120°C": "Measurement range: -20°C ÷ 120°C",
+    "Zakres temperatury pracy: -20°C ÷ 105°C": "Operating temperature range: -20°C ÷ 105°C",
+    "Maksymalny prąd: 3 mA": "Maximum current: 3 mA",
+    "Czujniki temperatury Pt1000": "Pt1000 temperature sensors",
+    "Rezystancja R (przy 0°C): 1000 Ω": "Resistance R (at 0°C): 1000 Ω",
+    "Tolerancja: B +/-0,12%": "Tolerance: B +/-0.12%",
+    "Stała czasowa: 6 s max": "Time constant: 6 s max",
+    "Zakres temperatury pracy: -25°C ÷ 70°C": "Operating temperature range: -25°C ÷ 70°C",
+    /* aktualności */
+    "Co nowego w naszej firmie": "What's new at our company",
+    "Wpisy przeniesione z bloga „Aktualności\" na smartcontrols.pl — nowości produktowe, katalogi oraz informacje branżowe.": "Posts migrated from the “News” blog on smartcontrols.pl — product news, catalogues and industry updates.",
+    "produkt": "product",
+    "katalog": "catalogue",
+    "poradnik": "guide",
+    "marka": "brand",
+    "branża": "industry",
+    "społeczność": "community",
+    "przepisy": "regulations",
+    "firma": "company",
+    "realizacja": "project",
+    "System sterowania wentylacji mechanicznej garażu podziemnego": "Control system for mechanical ventilation of an underground car park",
+    "Smart Controls oferuje kompletny system sterowania wentylacją mechaniczną garaży podziemnych, wyposażony w detekcję CO i LPG. Rozdzielnica wraz ze sterownikiem przygotowywana jest indywidualnie, zgodnie z wytycznymi konkretnego projektu — od doboru czujników po logikę załączania wentylatorów strumieniowych i bytowych.": "Smart Controls offers a complete control system for mechanical ventilation of underground car parks, equipped with CO and LPG detection. The cabinet and controller are prepared individually to the specific project's requirements — from sensor selection to the switching logic of jet and extract fans.",
+    "Automatyka PremiumBox+ do central wentylacyjnych": "PremiumBox+ automation for air-handling units",
+    "PremiumBOX+ umożliwia zdalną obsługę centrali przez użytkownika oraz zdalny serwis bez kosztów dojazdu technika, a oprogramowanie sterownika można aktualizować na odległość. Wbudowany webserwer eliminuje potrzebę dodatkowego panelu — daje graficzny interfejs dostępny z przeglądarki, działa jak aplikacja mobilna na iOS i Androidzie, a na komputerze przypomina obsługę systemu SCADA. Może pracować także w sieci lokalnej, bez dostępu do internetu, oraz integrować się z systemami BMS budynku.": "PremiumBOX+ enables remote AHU operation by the user and remote servicing without technician call-out costs, and the controller software can be updated remotely. The built-in web server removes the need for an extra panel — it provides a graphical interface accessible from a browser, works like a mobile app on iOS and Android, and on a computer resembles a SCADA system. It can also run on a local network without internet access and integrate with the building's BMS.",
+    "Katalog Elementów Automatyki 2023": "2023 Automation Components Catalogue",
+    "Zaktualizowany katalog zbiera w jednym dokumencie pełny przegląd elementów automatyki HVAC dostępnych w ofercie firmy — czujników, zaworów, siłowników i akcesoriów — ułatwiając dobór komponentów do konkretnej instalacji.": "The updated catalogue gathers a full overview of the HVAC automation components in the company's range — sensors, valves, actuators and accessories — in a single document, making it easier to select components for a specific installation.",
+    "Co to jest zawór kulowy CCV?": "What is a CCV characterised ball valve?",
+    "Zwykły zawór kulowy ma bardzo wysoki współczynnik przepływu (kvs) względem swojej średnicy nominalnej, przez co słabo nadaje się do precyzyjnej regulacji przepływu wody. Zawór CCV (charakteryzowany) wygląda podobnie, ale ma dodatkowe nacięcie w kształcie litery V w kuli lub tarczy, co przekształca go w precyzyjny zawór regulacyjny. Dzięki temu zapewnia stabilniejszą modulację przepływu, jest lżejszy i bardziej kompaktowy niż porównywalny zawór grzybkowy, wytrzymuje wyższe ciśnienie i zwykle kosztuje mniej.": "An ordinary ball valve has a very high flow coefficient (kvs) relative to its nominal diameter, which makes it poorly suited to precise water flow control. A CCV (characterised) valve looks similar but has an additional V-shaped notch in the ball or disc, turning it into a precise control valve. As a result it provides more stable flow modulation, is lighter and more compact than a comparable globe valve, withstands higher pressure and usually costs less.",
+    "Jako oficjalny dystrybutor NENUTEC Polska, Smart Controls ogłosił poszerzenie oferty o siłowniki przepustnic z funkcją elektronicznego powrotu (Fail-Safe) w wariantach 2/5/6/10/20 Nm, on-off lub modulowane, zasilane 230 V lub 24 V AC/DC — wszystkie dostępne również z wyłącznikami pomocniczymi.": "As the official NENUTEC Poland distributor, Smart Controls announced an extended range of damper actuators with an electronic fail-safe function in 2/5/6/10/20 Nm variants, on-off or modulating, powered by 230 V or 24 V AC/DC — all also available with auxiliary switches.",
+    "Rynek nieruchomości hamuje i spadają ceny": "The property market slows down and prices fall",
+    "Wpis komentujący spowolnienie na rynku nieruchomości w pierwszych miesiącach pandemii COVID-19 i jego możliwy wpływ na tempo nowych inwestycji budowlanych, a tym samym na zapotrzebowanie na automatykę wentylacji i klimatyzacji w nowo powstających obiektach.": "A post commenting on the property market slowdown in the first months of the COVID-19 pandemic and its possible impact on the pace of new construction projects, and thus on demand for ventilation and air-conditioning automation in new buildings.",
+    "Siłownik obrotowy do zaworów kulowych": "Rotary actuator for ball valves",
+    "Standardowe siłowniki obrotowe NENUTEC zaprojektowano do systemów grzewczych, wentylacyjnych i klimatyzacyjnych oraz instalacji z klimakonwektorami wentylatorowymi — do sterowania 2- i 3-drogowymi zaworami kulowymi o różnych wielkościach. Moment obrotowy 2/5/10 Nm, zasilanie 24 V AC/DC lub 230 V AC, sterowanie 2- i 3-punktowe albo analogowe 0(2)...10 VDC, z regulowanym stykiem pomocniczym SPDT i kierunkiem obrotu wybieranym przez użytkownika.": "Standard NENUTEC rotary actuators are designed for heating, ventilation and air-conditioning systems and fan-coil installations — for controlling 2- and 3-way ball valves of various sizes. Torque 2/5/10 Nm, power supply 24 V AC/DC or 230 V AC, 2- and 3-point or analog 0(2)...10 VDC control, with an adjustable SPDT auxiliary switch and user-selectable direction of rotation.",
+    "Przemienniki częstotliwości EURA": "EURA frequency inverters",
+    "Wprowadzenie do oferty przemienników częstotliwości marki EURA (seria E-810/HF Inverter) w wersjach jedno- i trójfazowych, służących do płynnej regulacji obrotów silników wentylatorów i pomp, co przekłada się na oszczędność energii względem pracy ze stałą prędkością.": "Introduction of EURA frequency inverters (E-810/HF Inverter series) in single- and three-phase versions, used for smooth speed control of fan and pump motors, translating into energy savings compared with constant-speed operation.",
+    "PGE przy wsparciu wolontariuszy przekazuje Seniorom płyny do dezynfekcji rąk": "PGE, with volunteer support, donates hand sanitiser to seniors",
+    "Wpis o lokalnej inicjatywie społecznej z okresu pandemii COVID-19 — przekazaniu środków do dezynfekcji rąk seniorom na Pomorzu przy wsparciu wolontariuszy i spółki PGE.": "A post about a local community initiative from the COVID-19 pandemic — donating hand sanitiser to seniors in Pomerania with the support of volunteers and the PGE company.",
+    "Obowiązkowe kontrole szczelności a wprowadzenie stanu zagrożenia epidemicznego": "Mandatory leak checks and the introduction of the epidemic emergency state",
+    "Informacja o tym, jak wprowadzenie stanu zagrożenia epidemicznego wiosną 2020 r. wpłynęło na terminy i obowiązek wykonywania okresowych kontroli szczelności instalacji chłodniczych i klimatyzacyjnych zawierających czynniki chłodnicze.": "Information on how the epidemic emergency state introduced in spring 2020 affected the deadlines and obligation to carry out periodic leak checks of refrigeration and air-conditioning installations containing refrigerants.",
+    "Harmonogram realizacji zamówień": "Order fulfilment schedule",
+    "Komunikat dla klientów dotyczący organizacji pracy i harmonogramu realizacji zamówień w pierwszych tygodniach pandemii — z informacją o możliwych zmianach standardowych terminów dostaw.": "A notice to customers about work organisation and the order fulfilment schedule in the first weeks of the pandemic — with information about possible changes to standard delivery times.",
+    "Energa wspiera walkę z koronawirusem na Pomorzu": "Energa supports the fight against coronavirus in Pomerania",
+    "Wpis o wsparciu udzielonym przez spółkę Energa w walce z pandemią koronawirusa w regionie pomorskim, w ramach lokalnych działań solidarnościowych z tego okresu.": "A post about the support provided by the Energa company in the fight against the coronavirus pandemic in the Pomerania region, as part of local solidarity efforts of that period.",
+    "Koronawirus a nieruchomości. Ekspert uspokaja": "Coronavirus and real estate. An expert reassures",
+    "Wpis z komentarzem eksperckim łagodzącym obawy dotyczące wpływu pandemii COVID-19 na rynek nieruchomości i tempo realizacji inwestycji budowlanych w Polsce.": "A post with expert commentary easing concerns about the impact of the COVID-19 pandemic on the property market and the pace of construction projects in Poland.",
+    "Stan wyjątkowy w budownictwie": "State of emergency in construction",
+    "Informacja o tym, jak wprowadzenie stanu zagrożenia epidemicznego wiosną 2020 r. wpłynęło na organizację pracy na placach budowy i harmonogramy realizacji inwestycji budowlanych.": "Information on how the epidemic emergency state introduced in spring 2020 affected work organisation on construction sites and project schedules.",
+    "Efekt bumerangu – epidemie są konsekwencją naszych działań": "The boomerang effect – epidemics are a consequence of our actions",
+    "Wpis o charakterze ogólnym, odnoszący się do związku między działalnością człowieka a pojawianiem się epidemii, publikowany w szczycie pierwszej fali pandemii COVID-19.": "A general post on the link between human activity and the emergence of epidemics, published at the peak of the first wave of the COVID-19 pandemic.",
+    "NENUTEC na targach Acrex 2020": "NENUTEC at the Acrex 2020 trade fair",
+    "Relacja z udziału marki NENUTEC w międzynarodowych targach branży klimatyzacji, wentylacji i chłodnictwa Acrex 2020 — prezentacja aktualnej oferty siłowników i zaworów.": "Coverage of the NENUTEC brand's participation in the Acrex 2020 international air-conditioning, ventilation and refrigeration trade fair — presenting the current range of actuators and valves.",
+    "Koronawirus ogranicza emisje CO2": "Coronavirus reduces CO2 emissions",
+    "Wpis komentujący obserwowany na początku pandemii spadek globalnych emisji CO2, będący efektem ubocznym ograniczenia aktywności gospodarczej i transportowej.": "A post commenting on the drop in global CO2 emissions observed at the start of the pandemic, a side effect of reduced economic and transport activity.",
+    "Jak koronawirus wpływa na branżę? – wyniki ankiety": "How is coronavirus affecting the industry? – survey results",
+    "Podsumowanie wyników ankiety branżowej dotyczącej wpływu pandemii COVID-19 na funkcjonowanie firm z sektora HVAC i budowlanego wiosną 2020 roku.": "A summary of an industry survey on the impact of the COVID-19 pandemic on HVAC and construction companies in spring 2020.",
+    "Brak dowodów, że systemy klimatyzacji powodują rozprzestrzenianie się koronawirusa": "No evidence that air-conditioning systems spread coronavirus",
+    "Wpis odnoszący się do ówczesnego stanu wiedzy naukowej na temat roli instalacji klimatyzacyjnych i wentylacyjnych w rozprzestrzenianiu się wirusa SARS-CoV-2.": "A post addressing the scientific understanding at the time of the role of air-conditioning and ventilation installations in the spread of the SARS-CoV-2 virus.",
+    "Stanowisko Ministerstwa Klimatu ws. obowiązkowych kontroli szczelności w okresie epidemii": "Ministry of Climate position on mandatory leak checks during the epidemic",
+    "Informacja o oficjalnym stanowisku Ministerstwa Klimatu dotyczącym wykonywania obowiązkowych okresowych kontroli szczelności urządzeń zawierających substancje kontrolowane (SZWO) i fluorowane gazy cieplarniane (F-gazy) w warunkach pandemii.": "Information on the official position of the Ministry of Climate regarding mandatory periodic leak checks of equipment containing controlled substances (ODS) and fluorinated greenhouse gases (F-gases) under pandemic conditions.",
+    "Szpital św. Wojciecha „Copernicus” Gdańsk — 22 centrale": "St. Adalbert “Copernicus” Hospital, Gdańsk — 22 AHUs",
+    "Wykonanie kompletu rozdzielnic sterujących wentylacją oraz automatyki dla 22 central w szpitalu Copernicus w Gdańsku. Zastosowano falowniki Eura Drives E-810 oraz elementy NENUTEC: siłowniki z elektroniczną funkcją bezpieczeństwa (NECM, NECA), siłowniki przepustnic (NEAM), siłowniki ze sprężyną (NESA), przetworniki i presostaty różnicy ciśnień (NPRC12, DBL-205B/C), zawory grzybkowe 3-drogowe (VFZ) z siłownikiem SE4M24, a także termostaty przeciwzamrożeniowe (TD2/TD3), przetwornik wilgotności kanałowy (TUC2) i przylgowy czujnik temperatury (PTS-NTC10K).": "Delivery of a complete set of ventilation control cabinets and automation for 22 AHUs at the Copernicus hospital in Gdańsk. The project used Eura Drives E-810 inverters and NENUTEC components: actuators with an electronic fail-safe function (NECM, NECA), damper actuators (NEAM), spring-return actuators (NESA), differential-pressure transmitters and switches (NPRC12, DBL-205B/C), 3-way globe valves (VFZ) with the SE4M24 actuator, as well as frost-protection thermostats (TD2/TD3), a duct humidity transmitter (TUC2) and a contact temperature sensor (PTS-NTC10K).",
+    "NSVA – Inteligentny Siłownik VAV": "NSVA – Intelligent VAV actuator",
+    "Wprowadzenie do oferty inteligentnego siłownika VAV serii NSVA, umożliwiającego niezależne od ciśnienia sterowanie zmiennym przepływem powietrza (Variable Air Volume) z wbudowanym regulatorem DDC.": "Introduction of the NSVA series intelligent VAV actuator, enabling pressure-independent variable air volume control with a built-in DDC controller.",
+    "Podnieś poprzeczkę za pomocą innowacyjnego Vcolor 368": "Raise the bar with the innovative Vcolor 368",
+    "Prezentacja kontrolera EVCO Vcolor 368 — zaawansowanego sterownika z kolorowym wyświetlaczem graficznym, przeznaczonego do central wentylacyjnych i urządzeń chłodniczych.": "Presentation of the EVCO Vcolor 368 — an advanced controller with a colour graphic display, intended for air-handling units and refrigeration equipment.",
+    "Nowe sterowniki od EVCO — EV3 300 & EV3 700": "New controllers from EVCO — EV3 300 & EV3 700",
+    "Rozszerzenie oferty o nowe sterowniki EVCO z serii EV3 (modele 300 i 700), przeznaczone do urządzeń chłodniczych i klimatyzacyjnych.": "Range extension with new EVCO controllers from the EV3 series (models 300 and 700), intended for refrigeration and air-conditioning equipment.",
+    "Uniwersalny sterownik EVCO EV3 400 już dostępny": "The universal EVCO EV3 400 controller is now available",
+    "Dalsze rozszerzenie serii EV3 marki EVCO o uniwersalny model EV3 400, dostępny w ofercie Smart Controls.": "A further extension of the EVCO EV3 series with the universal EV3 400 model, available from Smart Controls.",
+    /* realizacje */
+    "Ponad 80 wdrożeń od 2014 roku": "Over 80 completed projects since 2014",
+    "Pełna lista realizacji Smart Controls S.C. — od pojedynczych central wentylacyjnych po kompleksową automatykę szpitali, biurowców i zakładów produkcyjnych w całej Polsce.": "The complete list of Smart Controls S.C. projects — from single air-handling units to comprehensive automation of hospitals, office buildings and production plants across Poland.",
+    "Park Naukowo-Technologiczny": "Science and Technology Park",
+    /* do pobrania */
+    "Dokumentacja techniczna i cenniki": "Technical documentation and price lists",
+    "Karty katalogowe, deklaracje zgodności i cenniki w formacie PDF — pliki pochodzą z biblioteki dokumentów smartcontrols.pl.": "Data sheets, declarations of conformity and price lists in PDF format — files come from the smartcontrols.pl document library (documents are in Polish).",
+    "Cenniki": "Price lists",
+    "Aktualne zestawienie układów i elementów automatyki.": "Current list of automation systems and components.",
+    "Lista układów i elementów automatyki na rok 2023": "List of automation systems and components for 2023",
+    "Dokumentacja": "Documentation",
+    "Dokumentacja techniczna podzielona na sterownice SMART oraz elementy automatyki NENUTEC i EURA.": "Technical documentation divided into SMART control cabinets and NENUTEC and EURA automation components.",
+    "Dokumentacja – sterownice SMART": "Documentation – SMART control cabinets",
+    "Dokumentacja – elementy automatyki": "Documentation – automation components",
+    "Brak dokumentów pasujących do wyszukiwania.": "No documents match your search.",
+    "Pobierz oprogramowanie.": "Download software.",
+    "Certyfikaty i deklaracje zgodności": "Certificates and declarations of conformity",
+    "Certyfikaty CE i deklaracje zgodności dla elementów automatyki NENUTEC oraz przemienników EURA DRIVES — zgodnie ze strukturą strony smartcontrols.pl.": "CE certificates and declarations of conformity for NENUTEC automation components and EURA DRIVES inverters — following the structure of smartcontrols.pl.",
+    "Elementy Automatyki": "Automation components",
+    "Certyfikaty i deklaracje zgodności CE dla produktów NENUTEC.": "CE certificates and declarations of conformity for NENUTEC products.",
+    "Produkty EURA DRIVES": "EURA DRIVES products",
+    "Certyfikaty CE, deklaracje zgodności RoHS i REACH dla przemienników częstotliwości EURA serii E-810.": "CE certificates, RoHS and REACH declarations of conformity for EURA E-810 series frequency inverters.",
+    "Sterownica PremiumBox do central wentylacyjnych i klimatyzacyjnych": "PremiumBox control cabinet for ventilation and air-conditioning units",
+    "Sterownik do wentylacji bytowej garaży podziemnych": "Controller for underground car park ventilation",
+    "Sterownik do rekuperatora": "Heat-recovery unit controller",
+    "Czujniki przepływu / poziomu mediów i powietrza": "Flow / level sensors for media and air",
+    "Zawory motylkowe oraz kulowe odcinające wraz z siłownikami - przyłącze kołnierzowe": "Butterfly and ball shut-off valves with actuators - flanged connection",
+    "Zawory grzybkowe z przyłączem kołnierzowym": "Globe valves with flanged connection",
+    "Zawory grzybkowe z przyłączem gwintowanym": "Globe valves with threaded connection",
+    "Zawory kulowe z przyłączem gwintowanym": "Ball valves with threaded connection",
+    "Siłowniki ze sprężyną zwrotną": "Spring-return actuators",
+    "Siłowniki szybkie": "Fast-running actuators",
+    "Siłowniki standardowe": "Standard actuators",
+    "Siłowniki z funkcją bezpieczeństwa": "Fail-safe actuators",
+    "Przemienniki częstotliwości": "Frequency inverters",
+    "Siłowniki do przepustic powietrza oraz zaworów kulowych": "Actuators for air dampers and ball valves",
+    "Przetworniki CO2": "CO2 transmitters",
+    /* kontakt */
+    "Porozmawiajmy o Twojej instalacji": "Let's talk about your installation",
+    "Zadzwoń lub napisz — odpowiemy i dobierzemy odpowiednią automatykę do Twojego obiektu.": "Call or write to us — we'll respond and select the right automation for your building.",
+    "Adres": "Address",
+    "Godziny otwarcia": "Opening hours",
+    "Poniedziałek": "Monday",
+    "Wtorek": "Tuesday",
+    "Środa": "Wednesday",
+    "Czwartek": "Thursday",
+    "Piątek": "Friday",
+    "Sobota": "Saturday",
+    "Niedziela": "Sunday",
+    "Zamknięte": "Closed",
+    "Działy": "Departments",
+    "Informacje kontaktowe": "Contact information",
+    "Dane kontaktowe do poszczególnych działów, zgodnie z podziałem na oryginalnej stronie smartcontrols.pl.": "Contact details for individual departments, following the structure of the original smartcontrols.pl website.",
+    "Dział handlowy — rozdzielnice / zestawy": "Sales department — control cabinets / kits",
+    "Dział handlowy — elementy automatyki": "Sales department — automation components",
+    "Pomoc techniczna — uruchomienie central": "Technical support — AHU commissioning",
+    "Biuro": "Office",
+    "Reklamacje": "Complaints",
+    "Wyślij wiadomość": "Send a message",
+    "Osoba kontaktowa": "Contact person",
+    "Telefon kontaktowy": "Contact phone",
+    "Wiadomość": "Message",
+    "Wyślij": "Send",
+    /* stopka */
+    "AUTOMATYKA HVAC · SC-WEB v2.0 · Przykładowa strona": "HVAC AUTOMATION · SC-WEB v2.0 · Sample website"
+  };
+
+  /* przetłumacz dane produktów (modal renderuje się po załadowaniu) */
+  (function deep(o){
+    if(Array.isArray(o)){ o.forEach(deep); return; }
+    if(o && typeof o === 'object'){
+      for(const k of Object.keys(o)){
+        if(typeof o[k] === 'string'){
+          if(k !== 'img' && k !== 'url' && k !== 'photo' && k !== 'id' && k !== 'p') o[k] = tr(o[k]);
+        } else {
+          deep(o[k]);
+        }
+      }
+    }
+  })(productData);
+
+  document.title = 'Smart Controls S.C. — Ventilation and air-conditioning automation';
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if(metaDesc) metaDesc.setAttribute('content', 'Smart Controls S.C. — design, supply and service of ventilation and air-conditioning automation. Rumia, Poland.');
+
+  const heroH1 = document.querySelector('.hero h1');
+  if(heroH1) heroH1.innerHTML = 'Control that <span>reacts</span> before you even think about it.';
+
+  const cs = document.getElementById('cennikSearch');
+  if(cs) cs.placeholder = 'Search model or specification (e.g. "NACA-20", "DN50", "0-10V")…';
+  const ds = document.getElementById('docSearch');
+  if(ds) ds.placeholder = 'Search documents (e.g. "NACA", "PremiumBox", "VFZ")…';
+  const cf = document.getElementById('contactForm');
+  if(cf){
+    const nameIn = cf.querySelector('input[name="name"]'); if(nameIn) nameIn.placeholder = 'Full name';
+    const emailIn = cf.querySelector('input[name="email"]'); if(emailIn) emailIn.placeholder = 'john.smith@company.com';
+    const msgIn = cf.querySelector('textarea[name="message"]'); if(msgIn) msgIn.placeholder = 'Briefly describe your installation or enquiry...';
+  }
+  const hb = document.getElementById('hamburgerBtn'); if(hb) hb.setAttribute('aria-label', 'Open menu');
+  const mc = document.getElementById('modalClose'); if(mc) mc.setAttribute('aria-label', 'Close');
+
+  /* przejdź po wszystkich węzłach tekstowych i przetłumacz */
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      const p = node.parentElement;
+      if(!p || p.tagName === 'SCRIPT' || p.tagName === 'STYLE') return NodeFilter.FILTER_REJECT;
+      if(p.closest('.dl-name')) return NodeFilter.FILTER_REJECT; /* nazwy plików PDF zostają po polsku */
+      return node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  const textNodes = [];
+  while(walker.nextNode()) textNodes.push(walker.currentNode);
+  textNodes.forEach(n => {
+    const out = tr(n.nodeValue);
+    if(out !== n.nodeValue) n.nodeValue = out;
+  });
 })();
 </script>
 
