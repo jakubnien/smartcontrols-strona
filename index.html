@@ -541,6 +541,7 @@ h1 span{ color: var(--amber); }
   text-transform:uppercase;
   letter-spacing:0.08em;
 }
+.pres-panel-title{ color: var(--off-white); font-size:0.95rem; font-weight:700; letter-spacing:0.04em; }
 .led-row{ display:flex; gap:7px; }
 .led{ width:8px;height:8px;border-radius:50%; background: var(--panel-line); }
 .led.on{ background: var(--signal-green); box-shadow: 0 0 8px rgba(82,183,136,0.7); animation: blink 3s ease-in-out infinite; }
@@ -1321,7 +1322,7 @@ footer{
 
     <div class="panel-card presentation-card">
       <div class="panel-head">
-        <span><svg class="fan-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="fan-rotor"><path d="M12 12 C12 8, 14 4.5, 12 2 C9 3.5, 9.5 8.5, 12 12Z" fill="var(--amber)"/><path d="M12 12 C15.5 12, 19 14, 21.5 12.5 C20 9.5, 15 9.7, 12 12Z" fill="var(--amber)"/><path d="M12 12 C10 15, 8.5 19, 5 19.5 C4.8 16, 8.8 13.5, 12 12Z" fill="var(--amber)"/></g><circle cx="12" cy="12" r="2.2" fill="var(--off-white)"/></svg> Prezentacja produktowa</span>
+        <span class="pres-panel-title"><svg class="fan-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="fan-rotor"><path d="M12 12 C12 8, 14 4.5, 12 2 C9 3.5, 9.5 8.5, 12 12Z" fill="var(--amber)"/><path d="M12 12 C15.5 12, 19 14, 21.5 12.5 C20 9.5, 15 9.7, 12 12Z" fill="var(--amber)"/><path d="M12 12 C10 15, 8.5 19, 5 19.5 C4.8 16, 8.8 13.5, 12 12Z" fill="var(--amber)"/></g><circle cx="12" cy="12" r="2.2" fill="var(--off-white)"/></svg> Nowości</span>
         <div class="led-row">
           <div class="led on"></div>
           <div class="led on"></div>
